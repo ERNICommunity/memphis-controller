@@ -1,0 +1,12 @@
+[submodule "lib/plat/timer"]
+	path = lib/plat/timer
+	url = https://github.com/dniklaus/arduino-utils-timer.git
+[submodule "lib/plat/debug-cli"]
+	path = lib/plat/debug-cli
+	url = https://github.com/ERNICommunity/debug-cli.git
+[submodule "lib/plat/debug-trace"]
+	path = lib/plat/debug-trace
+	url = https://github.com/ERNICommunity/dbg-trace.git
+[submodule "lib/plat/SerialCommand"]
+	path = lib/plat/SerialCommand
+	url = https://github.com/kroimon/Arduino-SerialCommand.git
