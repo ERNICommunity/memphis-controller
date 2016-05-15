@@ -144,8 +144,8 @@ public:
 #ifdef ESP8266
 MemphisWiFiClient* wifiClient = 0;
 // Update these with values suitable for your network.
-#define WIFI_SSID       "linksys"
-#define WIFI_PWD        "jtv8a9r3"
+#define WIFI_SSID       "DNNet"
+#define WIFI_PWD        "Furz1234"
 #endif
 
 //-----------------------------------------------------------------------------
