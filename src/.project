@@ -97,6 +97,11 @@
 			<locationURI>memphis_controllerdebug_trace/debug_trace</locationURI>
 		</link>
 		<link>
+			<name>prod/sockets</name>
+			<type>2</type>
+			<locationURI>memphis_controllersockets/sockets</locationURI>
+		</link>
+		<link>
 			<name>prod/wificlient</name>
 			<type>2</type>
 			<locationURI>memphis_controllerwificlient/wificlient</locationURI>

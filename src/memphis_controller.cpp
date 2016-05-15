@@ -13,13 +13,12 @@
 #include <MemphisWiFiClient.h>
 #endif
 #include <Adafruit_NeoPixel.h>
-#include <ToggleButton.h>
-
+#include <PolarPulse.h>
+#include <MemphisPulseSensorAdapter.h>
 
 //-----------------------------------------------------------------------------
 // NeoPixel Matrix
 //-----------------------------------------------------------------------------
-
 Adafruit_NeoPixel* pixels = 0;
 // Which pin on the Arduino is connected to the NeoPixels?
 // On a Trinket or Gemma we suggest changing this to 1
@@ -139,7 +138,6 @@ public:
   }
 };
 
-
 //-----------------------------------------------------------------------------
 // WiFi Client
 //-----------------------------------------------------------------------------
@@ -230,68 +228,7 @@ public:
 //-----------------------------------------------------------------------------
 // Pulse Sensor
 //-----------------------------------------------------------------------------
-ToggleButton* pulseSensor = 0;
-unsigned int pulseCount = 0;
-void measInterval()
-{
-  Serial.print("Pulse count per minute: ");
-  Serial.println(4 * pulseCount);
-  pulseCount = 0;
-}
-
-class PulseCountTimerAdapter : public TimerAdapter
-{
-public:
-  void timeExpired()
-  {
-    measInterval();
-  }
-};
-
-class PulseSensorAdapter : public ToggleButtonAdapter
-{
-private:
-  Timer* m_pulseCountTimer;
-  Timer* m_toggleResetTimer;
-  class ToggleResetTimerAdapter : public TimerAdapter
-  {
-  private:
-    ToggleButton* m_pulseSensor;
-  public:
-    ToggleResetTimerAdapter()
-    : m_pulseSensor(0)
-    { }
-    void attachPulseSensor(ToggleButton* pulseSensor) { m_pulseSensor = pulseSensor; }
-    void timeExpired()
-    {
-      if (0 != m_pulseSensor)
-      {
-        m_pulseSensor->setIsActive(false);
-      }
-    }
-  };
-public:
-  PulseSensorAdapter()
-  : m_pulseCountTimer(new Timer(new PulseCountTimerAdapter(), Timer::IS_RECURRING, 15000))
-  , m_toggleResetTimer(new Timer(new ToggleResetTimerAdapter(), Timer::IS_NON_RECURRING))
-  { }
-
-  void attachPulseSensor(ToggleButton* pulseSensor)
-  {
-    ToggleResetTimerAdapter* adapter = static_cast<ToggleResetTimerAdapter*>(m_toggleResetTimer->adapter());
-    adapter->attachPulseSensor(pulseSensor);
-  }
-
-  void notifyStatusChanged(bool isActive)
-  {
-    if (isActive)
-    {
-      m_toggleResetTimer->startTimer(100);
-      Serial.println("Beat");
-      pulseCount++;
-    }
-  }
-};
+PolarPulse* pulseSensor = 0;
 
 //-----------------------------------------------------------------------------
 
@@ -356,9 +293,7 @@ void setup()
   //-----------------------------------------------------------------------------
   // Pulse Sensor
   //-----------------------------------------------------------------------------
-  pulseSensor = new ToggleButton(13, LED_BUILTIN, ToggleButton::IS_POS_LOGIC, new PulseSensorAdapter());
-  PulseSensorAdapter* pulseSensorAdapter = static_cast<PulseSensorAdapter*>(pulseSensor->adapter());
-  pulseSensorAdapter->attachPulseSensor(pulseSensor);
+  pulseSensor = new PolarPulse(13, LED_BUILTIN, PolarPulse::IS_POS_LOGIC, new MemphisPulseSensorAdapter());
  }
 
 void loop()
