@@ -21,11 +21,18 @@
 								<option id="it.baeyens.arduino.compiler.cpp.sketch.option.incpath.335669676" name="Include Paths (-I)" superClass="it.baeyens.arduino.compiler.cpp.sketch.option.incpath" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/arduino/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/arduino/variant}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/Libraries/esp8266}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/Libraries/esp8266/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/Libraries/ESP8266WiFi}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/Libraries/ESP8266WiFi/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/plat/Timer}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/plat/SerialCommand}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/plat/debug_cli}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/plat/debug_trace}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/comp/neopixel}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/comp/ToggleButton}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/prod/wificlient}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/PolarPulse}&quot;"/>
 								</option>
 								<inputType id="it.baeyens.arduino.compiler.cpp.sketch.input.724154294" name="CPP source files" superClass="it.baeyens.arduino.compiler.cpp.sketch.input"/>
 							</tool>
@@ -33,11 +40,18 @@
 								<option id="it.baeyens.arduino.compiler.c.sketch.option.incpath.1405516011" name="Include Paths (-I)" superClass="it.baeyens.arduino.compiler.c.sketch.option.incpath" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/arduino/core}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/arduino/variant}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/Libraries/esp8266}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/Libraries/esp8266/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/Libraries/ESP8266WiFi}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/Libraries/ESP8266WiFi/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/plat/Timer}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/plat/SerialCommand}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/plat/debug_cli}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/plat/debug_trace}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/comp/neopixel}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/comp/ToggleButton}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/prod/wificlient}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memphis_controller/PolarPulse}&quot;"/>
 								</option>
 								<inputType id="it.baeyens.arduino.compiler.c.sketch.input.71424129" name="C Source Files" superClass="it.baeyens.arduino.compiler.c.sketch.input"/>
 							</tool>

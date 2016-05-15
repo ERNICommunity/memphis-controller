@@ -42,14 +42,34 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
+			<name>Libraries/ESP8266WiFi</name>
+			<type>2</type>
+			<locationURI>ArduinoHardwareLibPath/ESP8266WiFi</locationURI>
+		</link>
+		<link>
+			<name>Libraries/esp8266</name>
+			<type>2</type>
+			<locationURI>ArduinoHardwareLibPath/esp8266</locationURI>
+		</link>
+		<link>
 			<name>arduino/core</name>
 			<type>2</type>
-			<locationURI>ArduinoPlatformPath/arduino</locationURI>
+			<locationURI>ArduinoPlatformPath/esp8266</locationURI>
 		</link>
 		<link>
 			<name>arduino/variant</name>
 			<type>2</type>
-			<locationURI>ArduinoPinPath/mega</locationURI>
+			<locationURI>ArduinoPinPath/adafruit</locationURI>
+		</link>
+		<link>
+			<name>comp/PolarPulse</name>
+			<type>2</type>
+			<locationURI>memphis_controllerPolarPulse/PolarPulse</locationURI>
+		</link>
+		<link>
+			<name>comp/ToggleButton</name>
+			<type>2</type>
+			<locationURI>memphis_controllerToggleButton/ToggleButton</locationURI>
 		</link>
 		<link>
 			<name>comp/neopixel</name>
@@ -76,19 +96,24 @@
 			<type>2</type>
 			<locationURI>memphis_controllerdebug_trace/debug_trace</locationURI>
 		</link>
+		<link>
+			<name>prod/wificlient</name>
+			<type>2</type>
+			<locationURI>memphis_controllerwificlient/wificlient</locationURI>
+		</link>
 	</linkedResources>
 	<variableList>
 		<variable>
 			<name>ArduinoHardwareLibPath</name>
-			<value>file:/C:/git/arduino-projects/memphis-controller/tools/arduino/hardware/arduino/avr/libraries</value>
+			<value>file:/C:/Users/niklausd/AppData/Roaming/Arduino15/packages/esp8266/hardware/esp8266/2.1.0/libraries</value>
 		</variable>
 		<variable>
 			<name>ArduinoPinPath</name>
-			<value>file:/C:/git/arduino-projects/memphis-controller/tools/arduino/hardware/arduino/avr/variants</value>
+			<value>file:/C:/Users/niklausd/AppData/Roaming/Arduino15/packages/esp8266/hardware/esp8266/2.1.0/variants</value>
 		</variable>
 		<variable>
 			<name>ArduinoPlatformPath</name>
-			<value>file:/C:/git/arduino-projects/memphis-controller/tools/arduino/hardware/arduino/avr/cores</value>
+			<value>file:/C:/Users/niklausd/AppData/Roaming/Arduino15/packages/esp8266/hardware/esp8266/2.1.0/cores</value>
 		</variable>
 	</variableList>
 </projectDescription>
