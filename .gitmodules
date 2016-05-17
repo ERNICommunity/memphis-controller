@@ -7,6 +7,4 @@
 [submodule "lib/comp/neopixel"]
 	path = lib/comp/neopixel
 	url = https://github.com/adafruit/Adafruit_NeoPixel.git
-[submodule "lib/comp/PolarPulse"]
-	path = lib/comp/PolarPulse
-	url = https://github.com/dniklaus/PolarPulse.git
+
