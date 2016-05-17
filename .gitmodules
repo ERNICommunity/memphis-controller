@@ -1,8 +1,3 @@
 [submodule "lib/plat/debug-cli"]
 	path = lib/plat/debug-cli
 	url = https://github.com/ERNICommunity/debug-cli.git
-[submodule "lib/plat/debug-trace"]
-	path = lib/plat/debug-trace
-	url = https://github.com/ERNICommunity/dbg-trace.git
-
-
