@@ -1,5 +1,5 @@
 /*
- * WiFiClient.h
+ * MemphisWiFiClient.h
  *
  *  Created on: 08.04.2016
  *      Author: scan

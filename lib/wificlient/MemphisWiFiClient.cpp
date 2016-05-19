@@ -11,13 +11,11 @@
 #include <Timer.h>
 #include <DbgTracePort.h>
 
-
 const unsigned long MemphisWiFiClient::s_connectInterval_ms = 1000;
 
 //-----------------------------------------------------------------------------
 // WiFi Connect Timer Adapter
 //-----------------------------------------------------------------------------
-
 class MyWifiConnectTimerAdapter : public TimerAdapter
 {
 private:
