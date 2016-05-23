@@ -10,7 +10,7 @@
 #include <MemphisPulseSensorAdapter.h>
 
 MemphisPulseSensorAdapter::MemphisPulseSensorAdapter()
-: m_trPort(new DbgTrace_Port("pulse", "trConOut", DbgTrace_Level::debug))
+: m_trPort(new DbgTrace_Port("pulse", DbgTrace_Level::debug))
 { }
 
 MemphisPulseSensorAdapter::~MemphisPulseSensorAdapter()

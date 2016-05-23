@@ -43,7 +43,7 @@ public:
 MemphisWiFiClient::MemphisWiFiClient(char* wifi_ssid, char* wifi_pw)
 : m_wifiConnectTimer(0)
 , m_client(new WiFiClient())
-, m_trPort(new DbgTrace_Port("wifi", "trConOut", DbgTrace_Level::info))
+, m_trPort(new DbgTrace_Port("wifi", DbgTrace_Level::info))
 , m_WiFi_ssid(wifi_ssid)
 , m_WiFi_pw(wifi_pw)
 { }
