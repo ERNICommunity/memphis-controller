@@ -100,7 +100,7 @@ private:
   DbgTrace_Port* m_trPort;
 public:
   FreeHeapLogTimerAdapter()
-  : m_trPort(new DbgTrace_Port("heap", "trConOut", DbgTrace_Level::info))
+  : m_trPort(new DbgTrace_Port("heap", DbgTrace_Level::info))
   { }
 
   void timeExpired()
