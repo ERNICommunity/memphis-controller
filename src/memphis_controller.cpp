@@ -8,18 +8,14 @@
 #include <DbgTraceOut.h>
 #include <DbgPrintConsole.h>
 #include <DbgTraceLevel.h>
-#ifdef ESP8266
 #include <MemphisWiFiClient.h>
-#endif
 #include <Adafruit_NeoPixel.h>
 #include <PolarPulse.h>
 #include <MemphisPulseSensorAdapter.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_NeoMatrix.h>
-#include <Adafruit_NeoPixel.h>
+//#include <Adafruit_NeoPixel.h>
+//#include <Adafruit_NeoMatrix.h>
 #include <MqttClient.h>
 #include <PubSubClient.h>
-
 
 //-----------------------------------------------------------------------------
 // WiFi Client
@@ -146,17 +142,17 @@ PolarPulse* pulseSensor = 0;
 // Arduino.  When held that way, the first pixel is at the top right, and
 // lines are arranged in columns, progressive order.  The shield uses
 // 800 KHz (v2) pixels that expect GRB color data.
-Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(NEO_SIZE, NEO_SIZE, NEO_PIN,
-  NEO_MATRIX_TOP     + NEO_MATRIX_LEFT +
-  NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG,
-  NEO_GRB            + NEO_KHZ800);
-
-const uint16_t colors[] = {
-  matrix.Color(255, 0, 0), matrix.Color(0, 255, 0), matrix.Color(0, 0, 255) };
-
-int x = matrix.width();
-int pass = 0;
-int counter = 1;
+//Adafruit_NeoMatrix* matrix = new Adafruit_NeoMatrix(NEO_SIZE, NEO_SIZE, NEO_PIN,
+//  NEO_MATRIX_TOP     + NEO_MATRIX_LEFT +
+//  NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG,
+//  NEO_GRB            + NEO_KHZ800);
+//
+//const uint16_t colors[] = {
+//  matrix.Color(255, 0, 0), matrix.Color(0, 255, 0), matrix.Color(0, 0, 255) };
+//
+//int x = matrix.width();
+//int pass = 0;
+//int counter = 1;
 
 //-----------------------------------------------------------------------------
 
