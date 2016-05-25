@@ -22,8 +22,8 @@
 //-----------------------------------------------------------------------------
 #ifdef ESP8266
 MemphisWiFiClient* wifiClient = 0;
-#define WIFI_SSID       "linksys"
-#define WIFI_PWD        "jtv8a9r3"
+#define WIFI_SSID       "DNNet"
+#define WIFI_PWD        "Pass1234"
 MqttClient* mqttClient = 0;
 #define MQTT_SERVER_IP  "iot.eclipse.org"
 #define MQTT_PORT       1883
