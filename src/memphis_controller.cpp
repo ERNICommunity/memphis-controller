@@ -1,5 +1,12 @@
 #include "Arduino.h"
+
+// PlatformIO libraries
 #include <SerialCommand.h>
+#include <PubSubClient.h>
+#include <ThingSpeak.h>
+#include <Client.h>
+
+// private libraries
 #include <Timer.h>
 #include <DbgCliNode.h>
 #include <DbgCliTopic.h>
@@ -9,21 +16,16 @@
 #include <DbgPrintConsole.h>
 #include <DbgTraceLevel.h>
 #include <MemphisWiFiClient.h>
-#include <Adafruit_NeoPixel.h>
 #include <PolarPulse.h>
 #include <MemphisPulseSensorAdapter.h>
-//#include <Adafruit_NeoPixel.h>
-//#include <Adafruit_NeoMatrix.h>
 #include <MqttClient.h>
-#include <PubSubClient.h>
+#include <ConnectivitySecrets.h>
 
 //-----------------------------------------------------------------------------
 // WiFi Client
 //-----------------------------------------------------------------------------
 #ifdef ESP8266
 MemphisWiFiClient* wifiClient = 0;
-#define WIFI_SSID       "DNNet"
-#define WIFI_PWD        "Pass1234"
 MqttClient* mqttClient = 0;
 #define MQTT_SERVER_IP  "iot.eclipse.org"
 #define MQTT_PORT       1883
@@ -110,6 +112,7 @@ public:
 // Pulse Sensor
 //-----------------------------------------------------------------------------
 PolarPulse* pulseSensor = 0;
+#define PULSE_PIN 13
 
 //-----------------------------------------------------------------------------
 // NEO Matrix
@@ -163,7 +166,7 @@ void setup()
   //-----------------------------------------------------------------------------
   Serial.begin(115200);
   sCmd = new SerialCommand();
-  DbgCli_Node::AssignRootNode(new DbgCli_Topic(0, "dbg", "Memphis Controller Debug CLI Root Node."));
+  DbgCli_Node::AssignRootNode(new DbgCli_Topic(0, "dbg", "Workforce2020 Controller Debug CLI Root Node."));
 
   // Setup callbacks for SerialCommand commands
   if (0 != sCmd)
@@ -198,6 +201,11 @@ void setup()
   if (0 != wifiClient)
   {
     wifiClient->begin();
+
+    //-----------------------------------------------------------------------------
+    // ThingSpeak Client
+    //-----------------------------------------------------------------------------
+    ThingSpeak.begin(*wifiClient->getClient());
   }
 
   //-----------------------------------------------------------------------------
@@ -214,7 +222,7 @@ void setup()
   //-----------------------------------------------------------------------------
   // Pulse Sensor
   //-----------------------------------------------------------------------------
-  pulseSensor = new PolarPulse(13, LED_BUILTIN, PolarPulse::IS_POS_LOGIC, new MemphisPulseSensorAdapter());
+  pulseSensor = new PolarPulse(PULSE_PIN, LED_BUILTIN, PolarPulse::IS_POS_LOGIC, new MemphisPulseSensorAdapter(wifiClient, cMyChannelNumber, cMyWriteAPIKey));
 
   //-----------------------------------------------------------------------------
   // NEO Matrix

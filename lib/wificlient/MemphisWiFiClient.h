@@ -19,12 +19,13 @@ class DbgTrace_Port;
 class MemphisWiFiClient
 {
 public:
-  MemphisWiFiClient(char* wifi_ssid, char* wifi_pw);
+  MemphisWiFiClient(const char* wifi_ssid, const char* wifi_pw);
   virtual ~MemphisWiFiClient();
 
   void begin();
   void printWiFiStatusChanged(wl_status_t& old_wlStatus);
   wl_status_t getStatus();
+  bool isConnected();
   inline WiFiClient* getClient() { return m_client; };
   const char* getMacAddress() const;
 
@@ -32,8 +33,8 @@ private:
   Timer* m_wifiConnectTimer;
   WiFiClient* m_client;
   DbgTrace_Port* m_trPort;
-  char* m_WiFi_ssid;
-  char* m_WiFi_pw;
+  const char* m_WiFi_ssid;
+  const char* m_WiFi_pw;
   static const unsigned long s_connectInterval_ms;
 
 private:  // forbidden functions

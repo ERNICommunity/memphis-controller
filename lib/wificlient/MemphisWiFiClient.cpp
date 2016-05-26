@@ -40,7 +40,7 @@ public:
 //-----------------------------------------------------------------------------
 // IoF WiFi Client
 //-----------------------------------------------------------------------------
-MemphisWiFiClient::MemphisWiFiClient(char* wifi_ssid, char* wifi_pw)
+MemphisWiFiClient::MemphisWiFiClient(const char* wifi_ssid, const char* wifi_pw)
 : m_wifiConnectTimer(0)
 , m_client(new WiFiClient())
 , m_trPort(new DbgTrace_Port("wifi", DbgTrace_Level::info))
@@ -65,6 +65,12 @@ void MemphisWiFiClient::begin()
 {
   WiFi.begin(m_WiFi_ssid, m_WiFi_pw);
   m_wifiConnectTimer = new Timer(new MyWifiConnectTimerAdapter(this), Timer::IS_RECURRING, s_connectInterval_ms);
+}
+
+bool MemphisWiFiClient::isConnected()
+{
+  wl_status_t wlStatus = getStatus();
+  return (wlStatus == WL_CONNECTED);
 }
 
 void MemphisWiFiClient::printWiFiStatusChanged(wl_status_t& old_wlStatus)
