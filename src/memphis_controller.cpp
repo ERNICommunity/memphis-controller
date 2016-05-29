@@ -5,6 +5,10 @@
 #include <PubSubClient.h>
 #include <ThingSpeak.h>
 #include <Client.h>
+#include <Adafruit_GFX.h>
+#include <gfxfont.h>
+#include <Adafruit_NeoMatrix.h>
+#include <Adafruit_NeoPixel.h>
 
 // private libraries
 #include <Timer.h>
@@ -18,7 +22,7 @@
 #include <MemphisWiFiClient.h>
 #include <PolarPulse.h>
 #include <MemphisPulseSensorAdapter.h>
-#include <MqttClient.h>
+//#include <MqttClient.h>
 #include <ConnectivitySecrets.h>
 
 //-----------------------------------------------------------------------------
@@ -26,7 +30,7 @@
 //-----------------------------------------------------------------------------
 #ifdef ESP8266
 MemphisWiFiClient* wifiClient = 0;
-MqttClient* mqttClient = 0;
+//MqttClient* mqttClient = 0;
 #define MQTT_SERVER_IP  "iot.eclipse.org"
 #define MQTT_PORT       1883
 #endif
@@ -43,7 +47,7 @@ void dbgCliExecute()
     const unsigned int firstArgToHandle = 1;
     const unsigned int maxArgCnt = 10;
     char* args[maxArgCnt];
-    char* arg = "dbg";
+    char* arg = const_cast<char*>("dbg");
     unsigned int arg_cnt = 0;
     while ((maxArgCnt > arg_cnt) && (0 != arg))
     {
@@ -64,7 +68,7 @@ void sayHello()
   }
   else
   {
-    arg = "";
+    arg = const_cast<char*>("");;
   }
   if (arg != NULL)         // As long as it exists, take it
   {
@@ -140,22 +144,20 @@ PolarPulse* pulseSensor = 0;
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 
 
-// Example for NeoPixel Shield.  In this application we'd like to use it
-// as a 5x8 tall matrix, with the USB port positioned at the top of the
-// Arduino.  When held that way, the first pixel is at the top right, and
-// lines are arranged in columns, progressive order.  The shield uses
-// 800 KHz (v2) pixels that expect GRB color data.
-//Adafruit_NeoMatrix* matrix = new Adafruit_NeoMatrix(NEO_SIZE, NEO_SIZE, NEO_PIN,
+// Example for flexible NeoMatrix.  In this application we'd like to use it
+// as a 16x16 tall matrix. The matrix uses 800 KHz (v2) pixels that expect GRB color data.
+//Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(NEO_SIZE, NEO_SIZE, NEO_PIN,
 //  NEO_MATRIX_TOP     + NEO_MATRIX_LEFT +
 //  NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG,
 //  NEO_GRB            + NEO_KHZ800);
 //
+//typedef enum {
+//  CS_green = 0,
+//  CS_red   = 1,
+//  CS_blue  = 2
+//} ColorSelection;
 //const uint16_t colors[] = {
 //  matrix.Color(255, 0, 0), matrix.Color(0, 255, 0), matrix.Color(0, 0, 255) };
-//
-//int x = matrix.width();
-//int pass = 0;
-//int counter = 1;
 
 //-----------------------------------------------------------------------------
 
@@ -211,18 +213,13 @@ void setup()
   //-----------------------------------------------------------------------------
   // MQTT Client
   //-----------------------------------------------------------------------------
-  mqttClient = new MqttClient(MQTT_SERVER_IP, MQTT_PORT, wifiClient);
-  if (0 != mqttClient)
-  {
+//  mqttClient = new MqttClient(MQTT_SERVER_IP, MQTT_PORT, wifiClient);
+//  if (0 != mqttClient)
+//  {
 //    mqttClient->setCallback(callback);
-    mqttClient->startupClient();
-  }
+//    mqttClient->startupClient();
+//  }
 #endif
-
-  //-----------------------------------------------------------------------------
-  // Pulse Sensor
-  //-----------------------------------------------------------------------------
-  pulseSensor = new PolarPulse(PULSE_PIN, LED_BUILTIN, PolarPulse::IS_POS_LOGIC, new MemphisPulseSensorAdapter(wifiClient, cMyChannelNumber, cMyWriteAPIKey));
 
   //-----------------------------------------------------------------------------
   // NEO Matrix
@@ -230,8 +227,14 @@ void setup()
 //  matrix.begin();
 //  matrix.setTextWrap(false);
 //  matrix.setBrightness(10);
-//  matrix.setTextColor(colors[0]);
+//  matrix.setTextColor(colors[CS_green]);
 //  matrix.setTextSize(1);
+
+  //-----------------------------------------------------------------------------
+  // Pulse Sensor
+  //-----------------------------------------------------------------------------
+  pulseSensor = new PolarPulse(PolarPulse::PLS_NC, LED_BUILTIN, PolarPulse::IS_POS_LOGIC);
+  pulseSensor->attachAdapter(new MemphisPulseSensorAdapter(PULSE_PIN, pulseSensor, wifiClient, cMyChannelNumber, cMyWriteAPIKey, 0 /*&matrix*/));
 }
 
 void loop()
@@ -240,9 +243,9 @@ void loop()
   {
     sCmd->readSerial();     // process serial commands
   }
-  if (0 != mqttClient)
-  {
-    mqttClient->loop();     // process MQTT protocol
-  }
+//  if (0 != mqttClient)
+//  {
+//    mqttClient->loop();     // process MQTT protocol
+//  }
   yield();                  // process Timers
 }

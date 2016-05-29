@@ -12,20 +12,27 @@
 
 class DbgTrace_Port;
 class MemphisWiFiClient;
+class Adafruit_NeoMatrix;
 
 class MemphisPulseSensorAdapter: public PolarPulseAdapter
 {
 public:
-  MemphisPulseSensorAdapter(MemphisWiFiClient* memphisWiFiClient, const unsigned long int channelNumber, const char* writeAPIKey);
+  MemphisPulseSensorAdapter(int pulsePin, PolarPulse* polarPulse, MemphisWiFiClient* memphisWiFiClient, const unsigned long int channelNumber, const char* writeAPIKey, Adafruit_NeoMatrix* matrix);
   virtual ~MemphisPulseSensorAdapter();
 
+  unsigned int getCount();
+  void notifyHeartBeatRate(unsigned int* heartBeatRate, unsigned char numOfValues);
   void notifyHeartBeatRate(unsigned int heartBeatRate);
 
+public:
+  static int s_pulsePin;
+  static PolarPulse* s_pulse;
 private:
   DbgTrace_Port* m_trPort;
   MemphisWiFiClient* m_client;
   const unsigned long int m_channelNumber;
   const char* m_writeAPIKey;
+  Adafruit_NeoMatrix* m_matrix;
 
 private:  // forbidden functions
   MemphisPulseSensorAdapter();                                                  // default constructor
