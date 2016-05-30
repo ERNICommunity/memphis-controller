@@ -11,7 +11,7 @@
 #include <MemphisWiFiClient.h>
 #include <ESP8266WiFi.h>
 #include "ThingSpeak.h"
-#include <Adafruit_NeoMatrix.h>
+#include <MemphisMatrixDisplay.h>
 #include <String.h>
 #include <PolarPulse.h>
 
@@ -42,7 +42,7 @@ void pulseRIsr()
 int MemphisPulseSensorAdapter::s_pulsePin = PolarPulse::PLS_NC;
 PolarPulse* MemphisPulseSensorAdapter::s_pulse = 0;
 
-MemphisPulseSensorAdapter::MemphisPulseSensorAdapter(int pulsePin, PolarPulse* polarPulse, MemphisWiFiClient* memphisWiFiClient, const unsigned long int channelNumber, const char* writeAPIKey, Adafruit_NeoMatrix* matrix)
+MemphisPulseSensorAdapter::MemphisPulseSensorAdapter(int pulsePin, PolarPulse* polarPulse, MemphisWiFiClient* memphisWiFiClient, const unsigned long int channelNumber, const char* writeAPIKey, MemphisMatrixDisplay* matrix)
 : m_trPort(new DbgTrace_Port("pulse", DbgTrace_Level::debug))
 , m_client(memphisWiFiClient)
 , m_channelNumber(channelNumber)
@@ -102,8 +102,7 @@ void MemphisPulseSensorAdapter::notifyHeartBeatRate(unsigned int heartBeatRate)
 {
   if (0 != m_matrix)
   {
-//    m_matrix->setCursor(4, 4);
-//    m_matrix->print(String(heartBeatRate));
+    m_matrix->setHeartBeatRate(heartBeatRate);
   }
 
   char heartBeatText[40];

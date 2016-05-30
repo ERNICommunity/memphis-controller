@@ -10,3 +10,6 @@
 [submodule "lib/PolarPulse"]
 	path = lib/PolarPulse
 	url = https://github.com/dniklaus/PolarPulse.git
+[submodule "lib/battery"]
+	path = lib/battery
+	url = https://github.com/dniklaus/Battery.git

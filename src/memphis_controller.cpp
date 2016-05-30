@@ -22,6 +22,8 @@
 #include <MemphisWiFiClient.h>
 #include <PolarPulse.h>
 #include <MemphisPulseSensorAdapter.h>
+#include <MemphisMatrixDisplay.h>
+#include <Battery.h>
 //#include <MqttClient.h>
 #include <ConnectivitySecrets.h>
 
@@ -87,6 +89,87 @@ void unrecognized(const char *command)
   Serial.println("What?");
 }
 
+class MyBatteryAdapter : public BatteryAdapter
+{
+private:
+  Battery* m_battery;
+  MemphisMatrixDisplay* m_matrix;
+
+public:
+  MyBatteryAdapter(Battery* battery, MemphisMatrixDisplay* matrix)
+  : m_battery(battery)
+  , m_matrix(matrix)
+  { }
+
+  virtual float readBattVoltageSenseFactor()
+  {
+    return 9.239;
+  }
+
+  virtual unsigned int readRawBattSenseValue()
+  {
+    showBattVoltage();
+    unsigned int rawBattSenseValue = analogRead(0);
+    return rawBattSenseValue;
+  }
+
+  virtual void notifyBattVoltageOk()
+  {
+    Serial.println("Battery Voltage OK");
+    showBattVoltage();
+    if (0 != m_matrix)
+    {
+      m_matrix->activateDisplay();
+    }
+  }
+
+  virtual void notifyBattVoltageBelowWarnThreshold()
+  {
+    Serial.println("Battery Voltage Below Warning Threshold");
+    showBattVoltage();
+    if (0 != m_matrix)
+    {
+      m_matrix->activateDisplay();
+    }
+  }
+
+  virtual void notifyBattVoltageBelowStopThreshold()
+  {
+    Serial.println("Battery Voltage Below Stop Threshold");
+    showBattVoltage();
+    if (0 != m_matrix)
+    {
+      m_matrix->activateDisplay();
+    }
+  }
+
+  virtual void notifyBattVoltageBelowShutdownThreshold()
+  {
+    Serial.println("Battery Voltage Below Shutdown Threshold");
+    showBattVoltage();
+    if (0 != m_matrix)
+    {
+      m_matrix->deactivateDisplay();
+    }
+  }
+
+private:
+  void showBattVoltage()
+  {
+    float battVoltage = 0.0;
+    if (0 != m_battery)
+    {
+      battVoltage = m_battery->getBatteryVoltage();
+    }
+    Serial.print("Battery Voltage: ");
+    Serial.print(battVoltage);
+    Serial.println(" V");
+  }
+};
+
+Battery* battery = 0;
+MyBatteryAdapter* batteryAdapter = 0;
+
 //-----------------------------------------------------------------------------
 // Free Heap Logger
 //-----------------------------------------------------------------------------
@@ -121,43 +204,8 @@ PolarPulse* pulseSensor = 0;
 //-----------------------------------------------------------------------------
 // NEO Matrix
 //-----------------------------------------------------------------------------
-#define NEO_PIN    6
-#define NEO_SIZE  16
-
-// MATRIX DECLARATION:
-// Parameter 1 = width of NeoPixel matrix
-// Parameter 2 = height of matrix
-// Parameter 3 = pin number (most are valid)
-// Parameter 4 = matrix layout flags, add together as needed:
-//   NEO_MATRIX_TOP, NEO_MATRIX_BOTTOM, NEO_MATRIX_LEFT, NEO_MATRIX_RIGHT:
-//     Position of the FIRST LED in the matrix; pick two, e.g.
-//     NEO_MATRIX_TOP + NEO_MATRIX_LEFT for the top-left corner.
-//   NEO_MATRIX_ROWS, NEO_MATRIX_COLUMNS: LEDs are arranged in horizontal
-//     rows or in vertical columns, respectively; pick one or the other.
-//   NEO_MATRIX_PROGRESSIVE, NEO_MATRIX_ZIGZAG: all rows/columns proceed
-//     in the same order, or alternate lines reverse direction; pick one.
-//   See example below for these values in action.
-// Parameter 5 = pixel type flags, add together as needed:
-//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
-//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
-//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
-//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-
-
-// Example for flexible NeoMatrix.  In this application we'd like to use it
-// as a 16x16 tall matrix. The matrix uses 800 KHz (v2) pixels that expect GRB color data.
-//Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(NEO_SIZE, NEO_SIZE, NEO_PIN,
-//  NEO_MATRIX_TOP     + NEO_MATRIX_LEFT +
-//  NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG,
-//  NEO_GRB            + NEO_KHZ800);
-//
-//typedef enum {
-//  CS_green = 0,
-//  CS_red   = 1,
-//  CS_blue  = 2
-//} ColorSelection;
-//const uint16_t colors[] = {
-//  matrix.Color(255, 0, 0), matrix.Color(0, 255, 0), matrix.Color(0, 0, 255) };
+MemphisMatrixDisplay* matrix = 0;
+#define NEO_PIN 12
 
 //-----------------------------------------------------------------------------
 
@@ -224,17 +272,21 @@ void setup()
   //-----------------------------------------------------------------------------
   // NEO Matrix
   //-----------------------------------------------------------------------------
-//  matrix.begin();
-//  matrix.setTextWrap(false);
-//  matrix.setBrightness(10);
-//  matrix.setTextColor(colors[CS_green]);
-//  matrix.setTextSize(1);
+  matrix = new MemphisMatrixDisplay(NEO_PIN);
+  matrix->activateDisplay();
 
   //-----------------------------------------------------------------------------
   // Pulse Sensor
   //-----------------------------------------------------------------------------
   pulseSensor = new PolarPulse(PolarPulse::PLS_NC, LED_BUILTIN, PolarPulse::IS_POS_LOGIC);
-  pulseSensor->attachAdapter(new MemphisPulseSensorAdapter(PULSE_PIN, pulseSensor, wifiClient, cMyChannelNumber, cMyWriteAPIKey, 0 /*&matrix*/));
+  pulseSensor->attachAdapter(new MemphisPulseSensorAdapter(PULSE_PIN, pulseSensor, wifiClient, cMyChannelNumber, cMyWriteAPIKey, matrix));
+
+  //-----------------------------------------------------------------------------
+  // Battery Voltage Surveillance
+  //-----------------------------------------------------------------------------
+  battery = new Battery();
+  batteryAdapter = new MyBatteryAdapter(battery, matrix);
+  battery->attachAdapter(batteryAdapter);
 }
 
 void loop()
