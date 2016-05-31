@@ -108,7 +108,7 @@ public:
 
   virtual unsigned int readRawBattSenseValue()
   {
-    showBattVoltage();
+//    showBattVoltage();
     unsigned int rawBattSenseValue = analogRead(0);
     return rawBattSenseValue;
   }
