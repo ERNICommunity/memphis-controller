@@ -24,6 +24,8 @@ public:
   void activateDisplay();
   void deactivateDisplay();
 
+  void selectFrame2(bool isFrame2);
+
 
 private:
   uint16_t drawRGB24toRGB565(byte r, byte g, byte b);
@@ -36,6 +38,7 @@ private:
   Timer* m_heartAnimationTimer;
   unsigned int m_frame;
   bool m_isDisplayActive;
+  bool m_showHeart2;
 
 private:  // forbidden functions
   MemphisMatrixDisplay();                                             // default constructor
