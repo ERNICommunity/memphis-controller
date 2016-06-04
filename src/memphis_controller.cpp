@@ -200,6 +200,7 @@ public:
 //-----------------------------------------------------------------------------
 PolarPulse* pulseSensor = 0;
 #define PULSE_PIN 13
+#define PULSE_IND_PIN LED_BUILTIN
 
 //-----------------------------------------------------------------------------
 // NEO Matrix
@@ -252,10 +253,10 @@ void setup()
   {
     wifiClient->begin();
 
-//    //-----------------------------------------------------------------------------
-//    // ThingSpeak Client
-//    //-----------------------------------------------------------------------------
-//    ThingSpeak.begin(*wifiClient->getClient());
+    //-----------------------------------------------------------------------------
+    // ThingSpeak Client
+    //-----------------------------------------------------------------------------
+    ThingSpeak.begin(*wifiClient->getClient());
   }
 
   //-----------------------------------------------------------------------------
@@ -273,22 +274,34 @@ void setup()
   // NEO Matrix
   //-----------------------------------------------------------------------------
   matrix = new MemphisMatrixDisplay(NEO_PIN);
-  matrix->activateDisplay();
-  wifiClient->getMacAddress();
-  matrix->selectFrame2(true);
+  if (0 != matrix)
+  {
+    matrix->activateDisplay();
+  }
+
+//  const char* macAddress = wifiClient->getMacAddress();
+//  Serial.print("ID is MAC Address: ");
+//  Serial.print(macAddress);
+//  matrix->selectFrame2(true);
 
   //-----------------------------------------------------------------------------
   // Pulse Sensor
   //-----------------------------------------------------------------------------
-  pulseSensor = new PolarPulse(PolarPulse::PLS_NC, LED_BUILTIN, PolarPulse::IS_POS_LOGIC);
-  pulseSensor->attachAdapter(new MemphisPulseSensorAdapter(PULSE_PIN, pulseSensor, wifiClient, cMyChannelNumber, cMyWriteAPIKey, matrix));
+  pulseSensor = new PolarPulse(PolarPulse::PLS_NC, PULSE_IND_PIN, PolarPulse::IS_POS_LOGIC);
+  if (0 != pulseSensor)
+  {
+    pulseSensor->attachAdapter(new MemphisPulseSensorAdapter(PULSE_PIN, pulseSensor, wifiClient, cMyChannelNumber, cMyWriteAPIKey, matrix));
+  }
 
   //-----------------------------------------------------------------------------
   // Battery Voltage Surveillance
   //-----------------------------------------------------------------------------
   battery = new Battery();
-  batteryAdapter = new MyBatteryAdapter(battery, matrix);
-  battery->attachAdapter(batteryAdapter);
+  if (0 != battery)
+  {
+    batteryAdapter = new MyBatteryAdapter(battery, matrix);
+    battery->attachAdapter(batteryAdapter);
+  }
 }
 
 void loop()
