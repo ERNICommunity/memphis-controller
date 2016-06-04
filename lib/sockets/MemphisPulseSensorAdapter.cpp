@@ -32,6 +32,7 @@ void pulseRIsr()
   }
   if (0 != MemphisPulseSensorAdapter::s_pulse)
   {
+    // update LED indicator state
     MemphisPulseSensorAdapter::s_pulse->setIndicator(pulseState);
   }
   interrupts();
@@ -92,7 +93,7 @@ void MemphisPulseSensorAdapter::notifyHeartBeatRate(unsigned int* heartBeatRate,
     }
     else
     {
-    Serial.println("notifyHeartBeatRate(): client NOT connected");
+      Serial.println("notifyHeartBeatRate(): client NOT connected");
 //      TR_PRINT_STR(m_trPort, DbgTrace_Level::debug, "client NOT connected");
     }
   }

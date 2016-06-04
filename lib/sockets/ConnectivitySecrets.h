@@ -8,10 +8,10 @@
 #ifndef LIB_SOCKETS_CONNECTIVITYSECRETS_H_
 #define LIB_SOCKETS_CONNECTIVITYSECRETS_H_
 
-const char* WIFI_SSID = "ssid";
-const char* WIFI_PWD  = "----";
+const char* WIFI_SSID = "TECHNOARK";
+const char* WIFI_PWD  = "";
 
-const unsigned long int cMyChannelNumber = 123456;
-const char* cMyWriteAPIKey = "ABC123DEF456GHI7";
+const unsigned long int cMyChannelNumber = 116546;
+const char* cMyWriteAPIKey = "OBXOZH2F394WZSQM";
 
 #endif /* LIB_SOCKETS_CONNECTIVITYSECRETS_H_ */
