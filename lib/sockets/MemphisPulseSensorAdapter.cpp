@@ -6,11 +6,13 @@
  */
 
 #include <Arduino.h>
-#include <DbgTracePort.h>
+//#include <DbgTracePort.h>
 #include <MemphisPulseSensorAdapter.h>
-#include <MemphisWiFiClient.h>
+//#include <MemphisWiFiClient.h>
+#ifdef ESP8266
 #include <ESP8266WiFi.h>
-#include "ThingSpeak.h"
+#endif
+//#include "ThingSpeak.h"
 #include <MemphisMatrixDisplay.h>
 #include <String.h>
 #include <PolarPulse.h>
@@ -27,8 +29,8 @@ void pulseRIsr()
   {
     // rising edge
     pulseIsrCount++;
-//    Serial.print("ISR, pulseIsrCount: ");
-//    Serial.println (pulseIsrCount);
+    Serial.print("ISR, pulseIsrCount: ");
+    Serial.println (pulseIsrCount);
   }
   if (0 != MemphisPulseSensorAdapter::s_pulse)
   {
@@ -44,9 +46,9 @@ int MemphisPulseSensorAdapter::s_pulsePin = PolarPulse::PLS_NC;
 PolarPulse* MemphisPulseSensorAdapter::s_pulse = 0;
 
 MemphisPulseSensorAdapter::MemphisPulseSensorAdapter(int pulsePin, PolarPulse* polarPulse, MemphisWiFiClient* memphisWiFiClient, const unsigned long int channelNumber, const char* writeAPIKey, MemphisMatrixDisplay* matrix)
-: m_trPort(new DbgTrace_Port("pulse", DbgTrace_Level::debug))
+: /*m_trPort(new DbgTrace_Port("pulse", DbgTrace_Level::debug))
 , m_client(memphisWiFiClient)
-, m_channelNumber(channelNumber)
+,*/ m_channelNumber(channelNumber)
 , m_writeAPIKey(writeAPIKey)
 , m_matrix(matrix)
 {
@@ -63,8 +65,8 @@ MemphisPulseSensorAdapter::~MemphisPulseSensorAdapter()
 {
   detachInterrupt(s_pulsePin);
 
-  delete m_trPort;
-  m_trPort = 0;
+//  delete m_trPort;
+//  m_trPort = 0;
 }
 
 unsigned int MemphisPulseSensorAdapter::getCount()
@@ -79,24 +81,24 @@ unsigned int MemphisPulseSensorAdapter::getCount()
 
 void MemphisPulseSensorAdapter::notifyHeartBeatRate(unsigned int* heartBeatRate, unsigned char numOfValues)
 {
-  if (0 != m_client)
-  {
-    if (m_client->isConnected())
-    {
-      for (unsigned char i = 0; i < numOfValues; i++)
-      {
-        ThingSpeak.setField(i+1, static_cast<int>(heartBeatRate[i]));
-      }
-      ThingSpeak.writeFields(m_channelNumber, m_writeAPIKey);
-      Serial.println("notifyHeartBeatRate(): Reported to ThingSpeak");
-      //TR_PRINT_STR(m_trPort, DbgTrace_Level::debug, "Reported to ThingSpeak");
-    }
-    else
-    {
-      Serial.println("notifyHeartBeatRate(): client NOT connected");
-//      TR_PRINT_STR(m_trPort, DbgTrace_Level::debug, "client NOT connected");
-    }
-  }
+//  if (0 != m_client)
+//  {
+//    if (m_client->isConnected())
+//    {
+//      for (unsigned char i = 0; i < numOfValues; i++)
+//      {
+//        ThingSpeak.setField(i+1, static_cast<int>(heartBeatRate[i]));
+//      }
+//      ThingSpeak.writeFields(m_channelNumber, m_writeAPIKey);
+//      Serial.println("notifyHeartBeatRate(): Reported to ThingSpeak");
+//      //TR_PRINT_STR(m_trPort, DbgTrace_Level::debug, "Reported to ThingSpeak");
+//    }
+//    else
+//    {
+//      Serial.println("notifyHeartBeatRate(): client NOT connected");
+////      TR_PRINT_STR(m_trPort, DbgTrace_Level::debug, "client NOT connected");
+//    }
+//  }
 }
 
 void MemphisPulseSensorAdapter::notifyHeartBeatRate(unsigned int heartBeatRate)

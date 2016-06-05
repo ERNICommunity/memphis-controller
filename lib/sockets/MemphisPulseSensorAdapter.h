@@ -10,7 +10,7 @@
 
 #include <PolarPulse.h>
 
-class DbgTrace_Port;
+//class DbgTrace_Port;
 class MemphisWiFiClient;
 class MemphisMatrixDisplay;
 
@@ -28,8 +28,8 @@ public:
   static int s_pulsePin;
   static PolarPulse* s_pulse;
 private:
-  DbgTrace_Port* m_trPort;
-  MemphisWiFiClient* m_client;
+//  DbgTrace_Port* m_trPort;
+//  MemphisWiFiClient* m_client;
   const unsigned long int m_channelNumber;
   const char* m_writeAPIKey;
   MemphisMatrixDisplay* m_matrix;

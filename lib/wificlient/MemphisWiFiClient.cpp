@@ -6,7 +6,7 @@
  */
 
 #include <HardwareSerial.h>
-#include <include/wl_definitions.h>
+//#include <include/wl_definitions.h>
 #include <MemphisWiFiClient.h>
 #include <Timer.h>
 #include <DbgTracePort.h>
@@ -58,13 +58,14 @@ MemphisWiFiClient::~MemphisWiFiClient()
 
 wl_status_t MemphisWiFiClient::getStatus()
 {
-  return WiFi.status();
+  return WL_DISCONNECTED;
+//  return WiFi.status();
 }
 
 void MemphisWiFiClient::begin()
 {
-  WiFi.begin(m_WiFi_ssid, m_WiFi_pw);
-  m_wifiConnectTimer = new Timer(new MyWifiConnectTimerAdapter(this), Timer::IS_RECURRING, s_connectInterval_ms);
+//  WiFi.begin(m_WiFi_ssid, m_WiFi_pw);
+//  m_wifiConnectTimer = new Timer(new MyWifiConnectTimerAdapter(this), Timer::IS_RECURRING, s_connectInterval_ms);
 }
 
 bool MemphisWiFiClient::isConnected()
@@ -92,5 +93,6 @@ void MemphisWiFiClient::printWiFiStatusChanged(wl_status_t& old_wlStatus)
 
 const char* MemphisWiFiClient::getMacAddress() const
 {
-  return WiFi.macAddress().c_str();
+  return "18:FE:34:DB:4F:C5";
+//  return WiFi.macAddress().c_str();
 }
