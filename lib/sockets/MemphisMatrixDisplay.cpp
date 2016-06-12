@@ -44,7 +44,7 @@ typedef enum
 } ColorSelection;
 
 const uint16_t colors[] =
-{ Adafruit_NeoMatrix::Color(0, 255, 0), Adafruit_NeoMatrix::Color(255, 0, 0), Adafruit_NeoMatrix::Color(0, 0, 255) };
+{ Adafruit_NeoMatrix::Color(255, 0, 0), Adafruit_NeoMatrix::Color(0, 255, 0), Adafruit_NeoMatrix::Color(0, 0, 255) };
 
 // The "original" 4 Frames GIF
 #define heartbeating1NUM_FRM 4
@@ -162,14 +162,12 @@ MemphisMatrixDisplay::~MemphisMatrixDisplay()
 
 void MemphisMatrixDisplay::setHeartBeatRate(unsigned int heartBeatRate)
 {
-  // Serial.print("MemphisMatrixDisplay::setHeartBeatRate(), heartBeatRate: ");
-  // Serial.println(heartBeatRate);
   m_heartBeatRate = heartBeatRate;
   if (0 != m_heartAnimationTimer)
   {
     if (0 != m_heartBeatRate)
     {
-	  // Fix division by zero bug!
+	    // Fix division by zero bug!
       const unsigned long timeMillis = (60000 / m_heartBeatRate) / (m_showHeart2 ? heartbeating2NUM_FRM : heartbeating1NUM_FRM);
       m_heartAnimationTimer->startTimer(timeMillis);
     }
@@ -252,14 +250,6 @@ void MemphisMatrixDisplay::selectFrame2(bool isFrame2)
 void MemphisMatrixDisplay::activateDisplay()
 {
   m_isDisplayActive = true;
-  if (0 != m_neoMatrix)
-  {
-    m_neoMatrix->begin();
-    m_neoMatrix->setTextWrap(false);
-    m_neoMatrix->setBrightness(10);
-    m_neoMatrix->setFont(&TomThumb);
-    m_neoMatrix->setTextColor(colors[CS_blue]);
-  }
   updateDisplay();
 }
 
@@ -270,7 +260,7 @@ void MemphisMatrixDisplay::deactivateDisplay()
   {
 //  m_neoMatrix->fillScreen(0);
 //  m_neoMatrix->show();
-    m_neoMatrix->setTextColor(colors[CS_red]);
+    m_neoMatrix->setTextColor(colors[CS_green]);
   }
   updateDisplay();
 }
