@@ -46,7 +46,7 @@ int MemphisPulseSensorAdapter::s_pulsePin = PolarPulse::PLS_NC;
 PolarPulse* MemphisPulseSensorAdapter::s_pulse = 0;
 
 MemphisPulseSensorAdapter::MemphisPulseSensorAdapter(int pulsePin, PolarPulse* polarPulse, MemphisWiFiClient* memphisWiFiClient, const unsigned long int channelNumber, const char* writeAPIKey, MemphisMatrixDisplay* matrix)
-: m_trPort(new DbgTrace_Port("pulse", DbgTrace_Level::debug))
+: m_trPort(new DbgTrace_Port("pulse", DbgTrace_Level::error))
 , m_client(memphisWiFiClient)
 , m_channelNumber(channelNumber)
 , m_writeAPIKey(writeAPIKey)
@@ -90,13 +90,11 @@ void MemphisPulseSensorAdapter::notifyHeartBeatRate(unsigned int* heartBeatRate,
         ThingSpeak.setField(i+1, static_cast<int>(heartBeatRate[i]));
       }
       ThingSpeak.writeFields(m_channelNumber, m_writeAPIKey);
-      Serial.println("notifyHeartBeatRate(): Reported to ThingSpeak");
-      // TR_PRINT_STR(m_trPort, DbgTrace_Level::debug, "Reported to ThingSpeak");
+      TR_PRINT_STR(m_trPort, DbgTrace_Level::debug, "Reported to ThingSpeak");
     }
     else
     {
-      Serial.println("notifyHeartBeatRate(): client NOT connected");
-      // TR_PRINT_STR(m_trPort, DbgTrace_Level::debug, "client NOT connected");
+      TR_PRINT_STR(m_trPort, DbgTrace_Level::error, "client NOT connected");
     }
   }
 }
@@ -109,7 +107,6 @@ void MemphisPulseSensorAdapter::notifyHeartBeatRate(unsigned int heartBeatRate)
   }
 
   char heartBeatText[40];
-  Serial.print("Heart Beat Rate per minute: ");
-  Serial.println(heartBeatRate);
-//  TR_PRINT_STR(m_trPort, DbgTrace_Level::debug, heartBeatText);
+  sprintf(heartBeatText, "Heart Beat Rate per minute: %d", heartBeatRate);
+  TR_PRINT_STR(m_trPort, DbgTrace_Level::debug, heartBeatText);
 }
