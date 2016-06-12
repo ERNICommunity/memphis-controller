@@ -109,7 +109,7 @@ void MemphisPulseSensorAdapter::notifyHeartBeatRate(unsigned int heartBeatRate)
   }
 
   char heartBeatText[40];
-  sprintf(heartBeatText, "Heart Beat Rate per minute: %d", heartBeatRate);
-  Serial.println(heartBeatText);
+  Serial.print("Heart Beat Rate per minute: ");
+  Serial.println(heartBeatRate);
 //  TR_PRINT_STR(m_trPort, DbgTrace_Level::debug, heartBeatText);
 }

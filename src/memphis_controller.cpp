@@ -7,8 +7,9 @@
 //#include <Client.h>
 #include <Adafruit_GFX.h>
 #include <gfxfont.h>
-#include <Adafruit_NeoMatrix.h>
+#include <Fonts/TomThumb.h>
 #include <Adafruit_NeoPixel.h>
+#include <Adafruit_NeoMatrix.h>
 
 // private libraries
 #include <Timer.h>
@@ -23,7 +24,7 @@
 #include <PolarPulse.h>
 #include <MemphisPulseSensorAdapter.h>
 #include <MemphisMatrixDisplay.h>
-//#include <Battery.h>
+#include <Battery.h>
 //#include <MqttClient.h>
 #include <ConnectivitySecrets.h>
 
@@ -94,86 +95,86 @@ void unrecognized(const char *command)
 //-----------------------------------------------------------------------------
 #define BAT_SENSE_PIN A0
 
-//class MyBatteryAdapter : public BatteryAdapter
-//{
-//private:
-//  Battery* m_battery;
-//  MemphisMatrixDisplay* m_matrix;
-//
-//public:
-//  MyBatteryAdapter(Battery* battery, MemphisMatrixDisplay* matrix)
-//  : m_battery(battery)
-//  , m_matrix(matrix)
-//  { }
-//
-//  virtual float readBattVoltageSenseFactor()
-//  {
-//    return 9.239;
-//  }
-//
-//  virtual unsigned int readRawBattSenseValue()
-//  {
-////    showBattVoltage();
-//    unsigned int rawBattSenseValue = analogRead(BAT_SENSE_PIN);
-//    return rawBattSenseValue;
-//  }
-//
-//  virtual void notifyBattVoltageOk()
-//  {
-//    Serial.println("Battery Voltage OK");
+class MyBatteryAdapter : public BatteryAdapter
+{
+private:
+  Battery* m_battery;
+  MemphisMatrixDisplay* m_matrix;
+
+public:
+  MyBatteryAdapter(Battery* battery, MemphisMatrixDisplay* matrix)
+  : m_battery(battery)
+  , m_matrix(matrix)
+  { }
+
+  virtual float readBattVoltageSenseFactor()
+  {
+    return 9.239;
+  }
+
+  virtual unsigned int readRawBattSenseValue()
+  {
 //    showBattVoltage();
-//    if (0 != m_matrix)
-//    {
-//      m_matrix->activateDisplay();
-//    }
-//  }
-//
-//  virtual void notifyBattVoltageBelowWarnThreshold()
-//  {
-//    Serial.println("Battery Voltage Below Warning Threshold");
-//    showBattVoltage();
-//    if (0 != m_matrix)
-//    {
-//      m_matrix->activateDisplay();
-//    }
-//  }
-//
-//  virtual void notifyBattVoltageBelowStopThreshold()
-//  {
-//    Serial.println("Battery Voltage Below Stop Threshold");
-//    showBattVoltage();
-//    if (0 != m_matrix)
-//    {
-//      m_matrix->activateDisplay();
-//    }
-//  }
-//
-//  virtual void notifyBattVoltageBelowShutdownThreshold()
-//  {
-//    Serial.println("Battery Voltage Below Shutdown Threshold");
-//    showBattVoltage();
-//    if (0 != m_matrix)
-//    {
-//      m_matrix->deactivateDisplay();
-//    }
-//  }
-//
-//private:
-//  void showBattVoltage()
-//  {
-//    float battVoltage = 0.0;
-//    if (0 != m_battery)
-//    {
-//      battVoltage = m_battery->getBatteryVoltage();
-//    }
-//    Serial.print("Battery Voltage: ");
-//    Serial.print(battVoltage);
-//    Serial.println(" V");
-//  }
-//};
-//
-//Battery* battery = 0;
-//MyBatteryAdapter* batteryAdapter = 0;
+    unsigned int rawBattSenseValue = analogRead(BAT_SENSE_PIN);
+    return rawBattSenseValue;
+  }
+
+  virtual void notifyBattVoltageOk()
+  {
+    Serial.println("Battery Voltage OK");
+    showBattVoltage();
+    if (0 != m_matrix)
+    {
+      m_matrix->activateDisplay();
+    }
+  }
+
+  virtual void notifyBattVoltageBelowWarnThreshold()
+  {
+    Serial.println("Battery Voltage Below Warning Threshold");
+    showBattVoltage();
+    if (0 != m_matrix)
+    {
+      m_matrix->activateDisplay();
+    }
+  }
+
+  virtual void notifyBattVoltageBelowStopThreshold()
+  {
+    Serial.println("Battery Voltage Below Stop Threshold");
+    showBattVoltage();
+    if (0 != m_matrix)
+    {
+      m_matrix->activateDisplay();
+    }
+  }
+
+  virtual void notifyBattVoltageBelowShutdownThreshold()
+  {
+    Serial.println("Battery Voltage Below Shutdown Threshold");
+    showBattVoltage();
+    if (0 != m_matrix)
+    {
+      m_matrix->deactivateDisplay();
+    }
+  }
+
+private:
+  void showBattVoltage()
+  {
+    float battVoltage = 0.0;
+    if (0 != m_battery)
+    {
+      battVoltage = m_battery->getBatteryVoltage();
+    }
+    Serial.print("Battery Voltage: ");
+    Serial.print(battVoltage);
+    Serial.println(" V");
+  }
+};
+
+Battery* battery = 0;
+MyBatteryAdapter* batteryAdapter = 0;
 
 //-----------------------------------------------------------------------------
 // Free Heap Logger
@@ -354,27 +355,21 @@ void setup()
   //-----------------------------------------------------------------------------
   // Pulse Sensor
   //-----------------------------------------------------------------------------
-  new Timer(new PulseMockTimerAdapter(matrix), Timer::IS_RECURRING, c_PulseMockTimerModulateInterval);
-//  pulseSensor = new PolarPulse(PolarPulse::PLS_NC, PULSE_IND_PIN, PolarPulse::IS_POS_LOGIC);
-//  if (0 != pulseSensor)
-//  {
-//    pulseSensor->attachAdapter(new MemphisPulseSensorAdapter(PULSE_PIN, pulseSensor, wifiClient, cMyChannelNumber, cMyWriteAPIKey, matrix));
-//  }
-//  pulseSensor = new PolarPulse(PULSE_PIN, PULSE_IND_PIN, PolarPulse::IS_POS_LOGIC);
-//  if (0 != pulseSensor)
-//  {
-//    pulseSensor->attachAdapter(new MemphisPulseSensorAdapter(PolarPulse::PLS_NC, pulseSensor, 0 /*wifiClient*/, cMyChannelNumber, cMyWriteAPIKey, matrix));
-//  }
+  pulseSensor = new PolarPulse(PULSE_PIN, PULSE_IND_PIN, PolarPulse::IS_POS_LOGIC);
+  if (0 != pulseSensor)
+  {
+    pulseSensor->attachAdapter(new MemphisPulseSensorAdapter(PolarPulse::PLS_NC, pulseSensor, 0 /*wifiClient*/, cMyChannelNumber, cMyWriteAPIKey, matrix));
+  }
 
   //-----------------------------------------------------------------------------
   // Battery Voltage Surveillance
   //-----------------------------------------------------------------------------
-//  battery = new Battery();
-//  if (0 != battery)
-//  {
-//    batteryAdapter = new MyBatteryAdapter(battery, matrix);
-//    battery->attachAdapter(batteryAdapter);
-//  }
+  battery = new Battery();
+  if (0 != battery)
+  {
+    batteryAdapter = new MyBatteryAdapter(battery, matrix);
+    battery->attachAdapter(batteryAdapter);
+  }
 }
 
 void loop()
