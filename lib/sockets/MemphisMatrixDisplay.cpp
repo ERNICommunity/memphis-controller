@@ -157,7 +157,16 @@ void MemphisMatrixDisplay::setHeartBeatRate(unsigned int heartBeatRate)
   m_heartBeatRate = heartBeatRate;
   if (0 != m_heartAnimationTimer)
   {
-    m_heartAnimationTimer->startTimer((60000 / heartBeatRate) / (m_showHeart2 ? heartbeating2NUM_FRM : heartbeating1NUM_FRM));
+    if (0 != m_heartBeatRate)
+    {
+      // Fix division by zero bug!
+      const unsigned long timeMillis = (60000 / m_heartBeatRate) / (m_showHeart2 ? heartbeating2NUM_FRM : heartbeating1NUM_FRM);
+      m_heartAnimationTimer->startTimer(timeMillis);
+    }
+    else
+    {
+      m_heartAnimationTimer->cancelTimer();
+    }
   }
   updateDisplay();
 }
