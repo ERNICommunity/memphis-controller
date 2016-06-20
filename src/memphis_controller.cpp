@@ -355,6 +355,7 @@ void setup()
   //-----------------------------------------------------------------------------
   // Pulse Sensor
   //-----------------------------------------------------------------------------
+  // new Timer(new PulseMockTimerAdapter(matrix), Timer::IS_RECURRING, c_PulseMockTimerModulateInterval);
   pulseSensor = new PolarPulse(PULSE_PIN, PULSE_IND_PIN, PolarPulse::IS_POS_LOGIC);
   if (0 != pulseSensor)
   {
