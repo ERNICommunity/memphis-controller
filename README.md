@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/ERNICommunity/memphis-controller.png?label=ready&title=Ready)](https://waffle.io/ERNICommunity/memphis-controller)
 # memphis-controller
 Arkathon Project Memphis Controller Software
 
