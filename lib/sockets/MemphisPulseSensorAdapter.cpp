@@ -87,9 +87,9 @@ void MemphisPulseSensorAdapter::notifyHeartBeatRate(unsigned int* heartBeatRate,
     {
       for (unsigned char i = 0; i < numOfValues; i++)
       {
-        ThingSpeak.setField(i+1, static_cast<int>(heartBeatRate[i]));
+//        ThingSpeak.setField(i+1, static_cast<int>(heartBeatRate[i]));
       }
-      ThingSpeak.writeFields(m_channelNumber, m_writeAPIKey);
+//      ThingSpeak.writeFields(m_channelNumber, m_writeAPIKey);
       TR_PRINT_STR(m_trPort, DbgTrace_Level::debug, "Reported to ThingSpeak");
     }
     else
