@@ -8,11 +8,10 @@
 #ifndef LIB_SOCKETS_MEMPHISMATRIXDISPLAY_H_
 #define LIB_SOCKETS_MEMPHISMATRIXDISPLAY_H_
 
-#include <Adafruit_NeoMatrix.h>
-
 class Timer;
+class Adafruit_NeoMatrix;
 
-class MemphisMatrixDisplay : public Adafruit_NeoMatrix
+class MemphisMatrixDisplay
 {
 public:
   MemphisMatrixDisplay(uint8_t pin);
@@ -33,7 +32,11 @@ private:
   void updateHeart();
   void updateDisplay();
 
+public:
+  const static unsigned char s_matrixEdgeLength = 16;
+
 private:
+  Adafruit_NeoMatrix* m_neoMatrix;
   unsigned int m_heartBeatRate;
   Timer* m_heartAnimationTimer;
   unsigned int m_frame;
