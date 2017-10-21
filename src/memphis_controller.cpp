@@ -1,18 +1,28 @@
-#include "Arduino.h"
+/*
+ * memphis_controller.cpp
+ *
+ *  Created on: 19.05.2016
+ *      Author: niklausd
+ */
 
+#include <Arduino.h>
+#ifdef ESP8266
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#endif
 // PlatformIO libraries
-#include <SerialCommand.h>
-//#include <PubSubClient.h>
-#include <ThingSpeak.h>
-#include <Client.h>
+#include <PubSubClient.h>   // pio lib install 89,   lib details see https://github.com/knolleary/PubSubClient
+#include <SerialCommand.h>  // pio lib install 173,  lib details see https://github.com/kroimon/Arduino-SerialCommand
+#include <ThingSpeak.h>     // pio lib install 550,  lib details see https://github.com/mathworks/thingspeak-arduino
+#include <ArduinoJson.h>    // pio lib install 64,   lib details see https://github.com/bblanchon/ArduinoJson
+#include <Timer.h>          // pio lib install 1699, lib details see https://github.com/dniklaus/wiring-timer
+#include <Adafruit_NeoPixel.h>
+#include <Adafruit_NeoMatrix.h>
 #include <Adafruit_GFX.h>
 #include <gfxfont.h>
 #include <Fonts/TomThumb.h>
-#include <Adafruit_NeoPixel.h>
-#include <Adafruit_NeoMatrix.h>
 
 // private libraries
-#include <Timer.h>
 #include <DbgCliNode.h>
 #include <DbgCliTopic.h>
 #include <DbgTracePort.h>
@@ -20,78 +30,32 @@
 #include <DbgTraceOut.h>
 #include <DbgPrintConsole.h>
 #include <DbgTraceLevel.h>
-#include <MemphisWiFiClient.h>
+#include <MqttClientController.h>
+#include <PubSubClientWrapper.h>
+#include <MqttClient.h>
+#include <MqttTopic.h>
+#include <string.h>
+#include <AppDebug.h>
+#include <ProductDebug.h>
 #include <PolarPulse.h>
 #include <MemphisPulseSensorAdapter.h>
 #include <MemphisMatrixDisplay.h>
 #include <Battery.h>
-//#include <MqttClient.h>
+
 #include <ConnectivitySecrets.h>
 
-//-----------------------------------------------------------------------------
-// WiFi Client
-//-----------------------------------------------------------------------------
+//#define MQTT_SERVER "iot.eclipse.org"
+#define MQTT_SERVER "test.mosquitto.org"
+//#define MQTT_SERVER "broker.hivemq.com"
+
+SerialCommand* sCmd = 0;
+
 #ifdef ESP8266
-MemphisWiFiClient* wifiClient = 0;
-//MqttClient* mqttClient = 0;
-#define MQTT_SERVER_IP  "iot.eclipse.org"
-#define MQTT_PORT       1883
+WiFiClient* wifiClient = 0;
 #endif
 
 //-----------------------------------------------------------------------------
-// Arduino Cmd I/F
-//-----------------------------------------------------------------------------
-SerialCommand* sCmd = 0;
-
-void dbgCliExecute()
-{
-  if ((0 != sCmd) && (0 != DbgCli_Node::RootNode()))
-  {
-    const unsigned int firstArgToHandle = 1;
-    const unsigned int maxArgCnt = 10;
-    char* args[maxArgCnt];
-    char* arg = const_cast<char*>("dbg");
-    unsigned int arg_cnt = 0;
-    while ((maxArgCnt > arg_cnt) && (0 != arg))
-    {
-      args[arg_cnt] = arg;
-      arg = sCmd->next();
-      arg_cnt++;
-    }
-    DbgCli_Node::RootNode()->execute(static_cast<unsigned int>(arg_cnt), const_cast<const char**>(args), firstArgToHandle);
-  }
-}
-
-void sayHello()
-{
-  char *arg;
-  if (0 != sCmd)
-  {
-    arg = sCmd->next();    // Get the next argument from the SerialCommand object buffer
-  }
-  else
-  {
-    arg = const_cast<char*>("");;
-  }
-  if (arg != NULL)         // As long as it exists, take it
-  {
-    Serial.print("Hello ");
-    Serial.println(arg);
-  }
-  else
-  {
-    Serial.println("Hello, whoever you are");
-  }
-}
-
-// This is the default handler, and gets called when no other command matches.
-void unrecognized(const char *command)
-{
-  Serial.println("What?");
-}
-
-//-----------------------------------------------------------------------------
-// Battery Surveillance
+// Battery surveillance
 //-----------------------------------------------------------------------------
 #define BAT_SENSE_PIN A0
 
@@ -105,6 +69,9 @@ public:
   MyBatteryAdapter(Battery* battery, MemphisMatrixDisplay* matrix)
   : m_battery(battery)
   , m_matrix(matrix)
+  { }
+
+  virtual ~MyBatteryAdapter()
   { }
 
   virtual float readBattVoltageSenseFactor()
@@ -177,56 +144,11 @@ Battery* battery = 0;
 MyBatteryAdapter* batteryAdapter = 0;
 
 //-----------------------------------------------------------------------------
-// Free Heap Logger
-//-----------------------------------------------------------------------------
-const unsigned long c_freeHeapLogIntervalMillis = 10000;
-
-#ifdef ESP8266
-extern "C"
-{
-  #include "user_interface.h"
-}
-class FreeHeapLogTimerAdapter : public TimerAdapter
-{
-//private:
-  DbgTrace_Port* m_trPort;
-public:
-  FreeHeapLogTimerAdapter()
-  : m_trPort(new DbgTrace_Port("heap", DbgTrace_Level::info))
-  { }
-
-  void timeExpired()
-  {
-//    Serial.print("Free Heap size: ");
-//    Serial.println(system_get_free_heap_size());
-    TR_PRINT_LONG(m_trPort, DbgTrace_Level::debug, system_get_free_heap_size());
-  }
-};
-#else
-class FreeHeapLogTimerAdapter : public TimerAdapter
-{
-//private:
-//  DbgTrace_Port* m_trPort;
-public:
-  FreeHeapLogTimerAdapter()
-//  : m_trPort(new DbgTrace_Port("heap", DbgTrace_Level::info))
-  { }
-
-  void timeExpired()
-  {
-    Serial.print("Free Heap size: ");
-    Serial.println(RamUtils::getFreeRam());
-//    TR_PRINT_LONG(m_trPort, DbgTrace_Level::debug, system_get_free_heap_size());
-  }
-};
-#endif
-
-//-----------------------------------------------------------------------------
 // Pulse Sensor
 //-----------------------------------------------------------------------------
 PolarPulse* pulseSensor = 0;
 #define PULSE_PIN 13
-#define PULSE_IND_PIN LED_BUILTIN
+#define PULSE_IND_PIN BUILTIN_LED
 
 //const unsigned long c_PulseMockTimerModulateInterval = 2000;
 //
@@ -285,62 +207,26 @@ MemphisMatrixDisplay* matrix = 0;
 
 void setup()
 {
-  //-----------------------------------------------------------------------------
-  // Serial Command Object for Debug CLI
-  //-----------------------------------------------------------------------------
-  Serial.begin(115200);
-  sCmd = new SerialCommand();
-  DbgCli_Node::AssignRootNode(new DbgCli_Topic(0, "dbg", "Workforce2020 Controller Debug CLI Root Node."));
+  pinMode(PULSE_IND_PIN, OUTPUT);
+  digitalWrite(PULSE_IND_PIN, 1);
 
-  // Setup callbacks for SerialCommand commands
-  if (0 != sCmd)
-  {
-    sCmd->addCommand("dbg", dbgCliExecute);
-    sCmd->addCommand("hello", sayHello);        // Echos the string argument back
-    sCmd->setDefaultHandler(unrecognized);      // Handler for command that isn't matched  (says "What?")
-  }
-
-  //---------------------------------------------------------------------------
-  // Debug Trace
-  //---------------------------------------------------------------------------
-  new DbgTrace_Context(new DbgCli_Topic(DbgCli_Node::RootNode(), "tr", "Modify debug trace"));
-  new DbgTrace_Out(DbgTrace_Context::getContext(), "trConOut", new DbgPrint_Console());
-
-  Serial.println();
-  Serial.println(F("---------------------------------------------"));
-  Serial.println(F("Hello from Memphis Controller!"));
-  Serial.println(F("---------------------------------------------"));
-  Serial.println();
-
-  //-----------------------------------------------------------------------------
-  // Free Heap Logger
-  //-----------------------------------------------------------------------------
-  new Timer(new FreeHeapLogTimerAdapter(), Timer::IS_RECURRING, c_freeHeapLogIntervalMillis);
+  setupProdDebugEnv();
 
 #ifdef ESP8266
   //-----------------------------------------------------------------------------
-  // WiFi Connection
+  // ESP8266 WiFi Client
   //-----------------------------------------------------------------------------
-  wifiClient = new MemphisWiFiClient(WIFI_SSID, WIFI_PWD);
-  if (0 != wifiClient)
-  {
-    wifiClient->begin();
+  wifiClient = new WiFiClient();
 
-    //-----------------------------------------------------------------------------
-    // ThingSpeak Client
-    //-----------------------------------------------------------------------------
-    ThingSpeak.begin(*wifiClient->getClient());
-  }
+  //-----------------------------------------------------------------------------
+  // ThingSpeak Client
+  //-----------------------------------------------------------------------------
+  ThingSpeak.begin(*(wifiClient));
 
   //-----------------------------------------------------------------------------
   // MQTT Client
   //-----------------------------------------------------------------------------
-//  mqttClient = new MqttClient(MQTT_SERVER_IP, MQTT_PORT, wifiClient);
-//  if (0 != mqttClient)
-//  {
-//    mqttClient->setCallback(callback);
-//    mqttClient->startupClient();
-//  }
+  MqttClient.begin(MQTT_SERVER);
 #endif
 
   //-----------------------------------------------------------------------------
@@ -359,7 +245,7 @@ void setup()
   pulseSensor = new PolarPulse(PULSE_PIN, PULSE_IND_PIN, PolarPulse::IS_POS_LOGIC);
   if (0 != pulseSensor)
   {
-    pulseSensor->attachAdapter(new MemphisPulseSensorAdapter(PolarPulse::PLS_NC, pulseSensor, wifiClient, cMyChannelNumber, cMyWriteAPIKey, matrix));
+    pulseSensor->attachAdapter(new MemphisPulseSensorAdapter(PolarPulse::PLS_NC, pulseSensor, cMyChannelNumber, cMyWriteAPIKey, matrix));
   }
 
   //-----------------------------------------------------------------------------
@@ -379,9 +265,6 @@ void loop()
   {
     sCmd->readSerial();     // process serial commands
   }
-//  if (0 != mqttClient)
-//  {
-//    mqttClient->loop();     // process MQTT protocol
-//  }
+  MqttClient.loop();        // process MQTT Client
   yield();                  // process Timers
 }

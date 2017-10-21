@@ -8,7 +8,6 @@
 #include <Arduino.h>
 #include <DbgTracePort.h>
 #include <MemphisPulseSensorAdapter.h>
-#include <MemphisWiFiClient.h>
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
 #endif
@@ -45,9 +44,8 @@ void pulseRIsr()
 int MemphisPulseSensorAdapter::s_pulsePin = PolarPulse::PLS_NC;
 PolarPulse* MemphisPulseSensorAdapter::s_pulse = 0;
 
-MemphisPulseSensorAdapter::MemphisPulseSensorAdapter(int pulsePin, PolarPulse* polarPulse, MemphisWiFiClient* memphisWiFiClient, const unsigned long int channelNumber, const char* writeAPIKey, MemphisMatrixDisplay* matrix)
+MemphisPulseSensorAdapter::MemphisPulseSensorAdapter(int pulsePin, PolarPulse* polarPulse, const unsigned long int channelNumber, const char* writeAPIKey, MemphisMatrixDisplay* matrix)
 : m_trPort(new DbgTrace_Port("pulse", DbgTrace_Level::error))
-, m_client(memphisWiFiClient)
 , m_channelNumber(channelNumber)
 , m_writeAPIKey(writeAPIKey)
 , m_matrix(matrix)
@@ -81,21 +79,23 @@ unsigned int MemphisPulseSensorAdapter::getCount()
 
 void MemphisPulseSensorAdapter::notifyHeartBeatRate(unsigned int* heartBeatRate, unsigned char numOfValues)
 {
-  if (0 != m_client)
+  bool isWiFiConnected = false;
+#ifdef ESP8266
+  WiFiClient wifiClient;
+  isWiFiConnected = wifiClient.connected();
+#endif
+  if (isWiFiConnected)
   {
-    if (m_client->isConnected())
+    for (unsigned char i = 0; i < numOfValues; i++)
     {
-      for (unsigned char i = 0; i < numOfValues; i++)
-      {
-//        ThingSpeak.setField(i+1, static_cast<int>(heartBeatRate[i]));
-      }
-//      ThingSpeak.writeFields(m_channelNumber, m_writeAPIKey);
-      TR_PRINT_STR(m_trPort, DbgTrace_Level::debug, "Reported to ThingSpeak");
+      ThingSpeak.setField(i+1, static_cast<int>(heartBeatRate[i]));
     }
-    else
-    {
-      TR_PRINT_STR(m_trPort, DbgTrace_Level::error, "client NOT connected");
-    }
+    ThingSpeak.writeFields(m_channelNumber, m_writeAPIKey);
+    TR_PRINT_STR(m_trPort, DbgTrace_Level::debug, "Reported to ThingSpeak");
+  }
+  else
+  {
+    TR_PRINT_STR(m_trPort, DbgTrace_Level::error, "client NOT connected");
   }
 }
 

@@ -11,13 +11,12 @@
 #include <PolarPulse.h>
 
 class DbgTrace_Port;
-class MemphisWiFiClient;
 class MemphisMatrixDisplay;
 
 class MemphisPulseSensorAdapter: public PolarPulseAdapter
 {
 public:
-  MemphisPulseSensorAdapter(int pulsePin, PolarPulse* polarPulse, MemphisWiFiClient* memphisWiFiClient, const unsigned long int channelNumber, const char* writeAPIKey, MemphisMatrixDisplay* matrix);
+  MemphisPulseSensorAdapter(int pulsePin, PolarPulse* polarPulse, const unsigned long int channelNumber, const char* writeAPIKey, MemphisMatrixDisplay* matrix);
   virtual ~MemphisPulseSensorAdapter();
 
   unsigned int getCount();
@@ -29,7 +28,6 @@ public:
   static PolarPulse* s_pulse;
 private:
   DbgTrace_Port* m_trPort;
-  MemphisWiFiClient* m_client;
   const unsigned long int m_channelNumber;
   const char* m_writeAPIKey;
   MemphisMatrixDisplay* m_matrix;
