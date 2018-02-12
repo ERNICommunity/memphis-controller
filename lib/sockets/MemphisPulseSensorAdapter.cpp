@@ -10,8 +10,10 @@
 #include <MemphisPulseSensorAdapter.h>
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
+#include <ESP.h>
 #endif
-#include "ThingSpeak.h"
+#include <ThingSpeak.h>
+#include <ThingSpeakWrapper.h>
 #include <MemphisMatrixDisplay.h>
 #include <String.h>
 #include <PolarPulse.h>
@@ -44,11 +46,10 @@ void pulseRIsr()
 int MemphisPulseSensorAdapter::s_pulsePin = PolarPulse::PLS_NC;
 PolarPulse* MemphisPulseSensorAdapter::s_pulse = 0;
 
-MemphisPulseSensorAdapter::MemphisPulseSensorAdapter(int pulsePin, PolarPulse* polarPulse, const unsigned long int channelNumber, const char* writeAPIKey, MemphisMatrixDisplay* matrix)
+MemphisPulseSensorAdapter::MemphisPulseSensorAdapter(int pulsePin, PolarPulse* polarPulse, MemphisMatrixDisplay* matrix)
 : m_trPort(new DbgTrace_Port("pulse", DbgTrace_Level::error))
-, m_channelNumber(channelNumber)
-, m_writeAPIKey(writeAPIKey)
 , m_matrix(matrix)
+, m_thingSpeakWrapper(new ThingSpeakWrapper())
 {
   s_pulsePin = pulsePin;
   s_pulse = polarPulse;
@@ -65,6 +66,9 @@ MemphisPulseSensorAdapter::~MemphisPulseSensorAdapter()
 
   delete m_trPort;
   m_trPort = 0;
+
+  delete m_thingSpeakWrapper;
+  m_thingSpeakWrapper = 0;
 }
 
 unsigned int MemphisPulseSensorAdapter::getCount()
@@ -79,24 +83,11 @@ unsigned int MemphisPulseSensorAdapter::getCount()
 
 void MemphisPulseSensorAdapter::notifyHeartBeatRate(unsigned int* heartBeatRate, unsigned char numOfValues)
 {
-  bool isWiFiConnected = false;
-#ifdef ESP8266
-  WiFiClient wifiClient;
-  isWiFiConnected = wifiClient.connected();
-#endif
-  if (isWiFiConnected)
+  for (unsigned char i = 0; i < numOfValues; i++)
   {
-    for (unsigned char i = 0; i < numOfValues; i++)
-    {
-      ThingSpeak.setField(i+1, static_cast<int>(heartBeatRate[i]));
-    }
-    ThingSpeak.writeFields(m_channelNumber, m_writeAPIKey);
-    TR_PRINT_STR(m_trPort, DbgTrace_Level::debug, "Reported to ThingSpeak");
+    ThingSpeak.setField(i+1, static_cast<int>(heartBeatRate[i]));
   }
-  else
-  {
-    TR_PRINT_STR(m_trPort, DbgTrace_Level::error, "client NOT connected");
-  }
+  m_thingSpeakWrapper->triggerWriteFields();
 }
 
 void MemphisPulseSensorAdapter::notifyHeartBeatRate(unsigned int heartBeatRate)
