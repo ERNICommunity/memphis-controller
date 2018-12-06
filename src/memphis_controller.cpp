@@ -30,10 +30,10 @@
 #include <DbgTraceOut.h>
 #include <DbgPrintConsole.h>
 #include <DbgTraceLevel.h>
-#include <MqttClientController.h>
-#include <PubSubClientWrapper.h>
-#include <MqttClient.h>
-#include <MqttTopic.h>
+//#include <MqttClientController.h>
+//#include <PubSubClientWrapper.h>
+//#include <MqttClient.h>
+//#include <MqttTopic.h>
 #include <string.h>
 #include <AppDebug.h>
 #include <ProductDebug.h>
@@ -41,8 +41,6 @@
 #include <MemphisPulseSensorAdapter.h>
 #include <MemphisMatrixDisplay.h>
 #include <Battery.h>
-
-#include <ConnectivitySecrets.h>
 
 //#define MQTT_SERVER "iot.eclipse.org"
 #define MQTT_SERVER "test.mosquitto.org"
@@ -52,6 +50,18 @@ SerialCommand* sCmd = 0;
 
 #ifdef ESP8266
 WiFiClient* wifiClient = 0;
+
+//-----------------------------------------------------------------------------
+// ESP8266 WatchDog sitter
+//-----------------------------------------------------------------------------
+class WatchDogTimerAdapter : public TimerAdapter
+{
+public:
+  void timeExpired()
+  {
+    wdt_reset();
+  }
+};
 #endif
 
 //-----------------------------------------------------------------------------
@@ -214,6 +224,11 @@ void setup()
 
 #ifdef ESP8266
   //-----------------------------------------------------------------------------
+  // ESP8266 WatchDog sitter
+  //-----------------------------------------------------------------------------
+  new Timer(new WatchDogTimerAdapter(), Timer::IS_RECURRING, 2000);
+
+  //-----------------------------------------------------------------------------
   // ESP8266 WiFi Client
   //-----------------------------------------------------------------------------
   wifiClient = new WiFiClient();
@@ -222,11 +237,6 @@ void setup()
   // ThingSpeak Client
   //-----------------------------------------------------------------------------
   ThingSpeak.begin(*(wifiClient));
-
-  //-----------------------------------------------------------------------------
-  // MQTT Client
-  //-----------------------------------------------------------------------------
-  MqttClient.begin(MQTT_SERVER);
 #endif
 
   //-----------------------------------------------------------------------------
@@ -245,7 +255,7 @@ void setup()
   pulseSensor = new PolarPulse(PULSE_PIN, PULSE_IND_PIN, PolarPulse::IS_POS_LOGIC);
   if (0 != pulseSensor)
   {
-    pulseSensor->attachAdapter(new MemphisPulseSensorAdapter(PolarPulse::PLS_NC, pulseSensor, cMyChannelNumber, cMyWriteAPIKey, matrix));
+    pulseSensor->attachAdapter(new MemphisPulseSensorAdapter(PolarPulse::PLS_NC, pulseSensor, matrix));
   }
 
   //-----------------------------------------------------------------------------
@@ -265,6 +275,6 @@ void loop()
   {
     sCmd->readSerial();     // process serial commands
   }
-  MqttClient.loop();        // process MQTT Client
+//  MqttClient.loop();        // process MQTT Client
   yield();                  // process Timers
 }

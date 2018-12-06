@@ -12,11 +12,12 @@
 
 class DbgTrace_Port;
 class MemphisMatrixDisplay;
+class ThingSpeakWrapper;
 
 class MemphisPulseSensorAdapter: public PolarPulseAdapter
 {
 public:
-  MemphisPulseSensorAdapter(int pulsePin, PolarPulse* polarPulse, const unsigned long int channelNumber, const char* writeAPIKey, MemphisMatrixDisplay* matrix);
+  MemphisPulseSensorAdapter(int pulsePin, PolarPulse* polarPulse, MemphisMatrixDisplay* matrix);
   virtual ~MemphisPulseSensorAdapter();
 
   unsigned int getCount();
@@ -28,9 +29,8 @@ public:
   static PolarPulse* s_pulse;
 private:
   DbgTrace_Port* m_trPort;
-  const unsigned long int m_channelNumber;
-  const char* m_writeAPIKey;
   MemphisMatrixDisplay* m_matrix;
+  ThingSpeakWrapper* m_thingSpeakWrapper;
 
 private:  // forbidden functions
   MemphisPulseSensorAdapter();                                                  // default constructor
