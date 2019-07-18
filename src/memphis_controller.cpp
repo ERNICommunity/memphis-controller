@@ -158,7 +158,7 @@ MyBatteryAdapter* batteryAdapter = 0;
 //-----------------------------------------------------------------------------
 PolarPulse* pulseSensor = 0;
 #define PULSE_PIN 13
-#define PULSE_IND_PIN BUILTIN_LED
+#define PULSE_IND_PIN LED_BUILTIN
 
 //const unsigned long c_PulseMockTimerModulateInterval = 2000;
 //
