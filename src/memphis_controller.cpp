@@ -43,7 +43,7 @@
 #include <Battery.h>
 
 //#define MQTT_SERVER "iot.eclipse.org"
-#define MQTT_SERVER "test.mosquitto.org"
+//#define MQTT_SERVER "test.mosquitto.org"
 //#define MQTT_SERVER "broker.hivemq.com"
 
 SerialCommand* sCmd = 0;
@@ -160,52 +160,52 @@ PolarPulse* pulseSensor = 0;
 #define PULSE_PIN 13
 #define PULSE_IND_PIN LED_BUILTIN
 
-//const unsigned long c_PulseMockTimerModulateInterval = 2000;
-//
-//class PulseMockTimerAdapter : public TimerAdapter
-//{
-//private:
-//  MemphisMatrixDisplay* m_matrix;
-//  unsigned long int m_hbr;
-//  bool m_isModulationIncreasing;
-//public:
-//  PulseMockTimerAdapter(MemphisMatrixDisplay* matrix)
-//  : m_matrix(matrix)
-//  , m_hbr(60)
-//  , m_isModulationIncreasing(true)
-//  { }
-//
-//  void timeExpired()
-//  {
-//    if (0 != m_matrix)
-//    {
-//      m_matrix->setHeartBeatRate(m_hbr);
-//    }
-//
-//    if (m_isModulationIncreasing)
-//    {
-//      if (m_hbr < 91)
-//      {
-//        m_hbr++;
-//      }
-//      else
-//      {
-//        m_isModulationIncreasing = false;
-//      }
-//    }
-//    else
-//    {
-//      if (m_hbr > 62)
-//      {
-//        m_hbr--;
-//      }
-//      else
-//      {
-//        m_isModulationIncreasing = true;
-//      }
-//    }
-//  }
-//};
+const unsigned long c_PulseMockTimerModulateInterval = 2000;
+
+class PulseMockTimerAdapter : public TimerAdapter
+{
+private:
+  MemphisMatrixDisplay* m_matrix;
+  unsigned long int m_hbr;
+  bool m_isModulationIncreasing;
+public:
+  PulseMockTimerAdapter(MemphisMatrixDisplay* matrix)
+  : m_matrix(matrix)
+  , m_hbr(60)
+  , m_isModulationIncreasing(true)
+  { }
+
+  void timeExpired()
+  {
+    if (0 != m_matrix)
+    {
+      m_matrix->setHeartBeatRate(m_hbr);
+    }
+
+    if (m_isModulationIncreasing)
+    {
+      if (m_hbr < 91)
+      {
+        m_hbr++;
+      }
+      else
+      {
+        m_isModulationIncreasing = false;
+      }
+    }
+    else
+    {
+      if (m_hbr > 62)
+      {
+        m_hbr--;
+      }
+      else
+      {
+        m_isModulationIncreasing = true;
+      }
+    }
+  }
+};
 
 //-----------------------------------------------------------------------------
 // NEO Matrix
@@ -231,12 +231,12 @@ void setup()
   //-----------------------------------------------------------------------------
   // ESP8266 WiFi Client
   //-----------------------------------------------------------------------------
-  wifiClient = new WiFiClient();
+//  wifiClient = new WiFiClient();
 
   //-----------------------------------------------------------------------------
   // ThingSpeak Client
   //-----------------------------------------------------------------------------
-  ThingSpeak.begin(*(wifiClient));
+//  ThingSpeak.begin(*(wifiClient));
 #endif
 
   //-----------------------------------------------------------------------------
@@ -251,12 +251,12 @@ void setup()
   //-----------------------------------------------------------------------------
   // Pulse Sensor
   //-----------------------------------------------------------------------------
-  // new Timer(new PulseMockTimerAdapter(matrix), Timer::IS_RECURRING, c_PulseMockTimerModulateInterval);
-  pulseSensor = new PolarPulse(PULSE_PIN, PULSE_IND_PIN, PolarPulse::IS_POS_LOGIC);
-  if (0 != pulseSensor)
-  {
-    pulseSensor->attachAdapter(new MemphisPulseSensorAdapter(PolarPulse::PLS_NC, pulseSensor, matrix));
-  }
+   new Timer(new PulseMockTimerAdapter(matrix), Timer::IS_RECURRING, c_PulseMockTimerModulateInterval);
+//  pulseSensor = new PolarPulse(PULSE_PIN, PULSE_IND_PIN, PolarPulse::IS_POS_LOGIC);
+//  if (0 != pulseSensor)
+//  {
+//    pulseSensor->attachAdapter(new MemphisPulseSensorAdapter(PolarPulse::PLS_NC, pulseSensor, matrix));
+//  }
 
   //-----------------------------------------------------------------------------
   // Battery Voltage Surveillance
@@ -275,6 +275,10 @@ void loop()
   {
     sCmd->readSerial();     // process serial commands
   }
-//  MqttClient.loop();        // process MQTT Client
-  yield();                  // process Timers
+//  MqttClient.loop();      // process MQTT Client
+#ifdef ESP8266
+  scheduleTimers();
+#else
+  yield();
+#endif
 }
