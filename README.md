@@ -93,11 +93,12 @@ This chapter lists all the libraries this project is using.
 |ID|Name|URL|Description|
 |:---|:------------|:----------------|:-----------------------|
 |13|Adafruit GFX Library|https://github.com/adafruit/Adafruit-GFX-Library|Adafruit GFX graphics core library, this is the 'core' class that all our other graphics libraries derive from: [https://learn.adafruit.com/adafruit-gfx-graphics-library](https://learn.adafruit.com/adafruit-gfx-graphics-library)|
+|215|Adafruit NeoMatrix|https://github.com/adafruit/Adafruit_NeoMatrix|Adafruit_GFX-compatible library for NeoPixel grids|
+|28|Adafruit NeoPixel|https://github.com/adafruit/Adafruit_NeoPixel|Arduino library for controlling single-wire LED pixels (NeoPixel, WS2812, etc.)|
 | 173|SerialCommand|https://github.com/kroimon/Arduino-SerialCommand|A Wiring/Arduino library to tokenize and parse commands received over a serial port.|
 |1699|wiring-timer |https://github.com/dniklaus/wiring-timer|Universal recurring or non-recurring Timer. <br />Configurable timer to schedule events without having to use Arduino delay() function; helps to improve your application's architecture by encapsulating the timers into your components and thus make them active.|
 |1716|debug-cli|https://github.com/ERNICommunity/debug-cli|Debug CLI for Embedded Applications - Command Line  Interface for debugging and testing based on object oriented tree structure.|
 |1717|dbg-trace|https://github.com/ERNICommunity/dbg-trace|Debug Trace component for Embedded Applications - Debug and Trace Log message system based on trace ports with adjustable levels.|
-||||<to be completed>|
 
 
 

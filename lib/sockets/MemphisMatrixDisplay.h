@@ -42,6 +42,8 @@ private:
   unsigned int m_frame;
   bool m_isDisplayActive;
   bool m_showHeart2;
+  bool m_showHeart3;
+  bool m_printText;
 
 private:  // forbidden functions
   MemphisMatrixDisplay();                                             // default constructor
