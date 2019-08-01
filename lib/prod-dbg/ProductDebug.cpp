@@ -10,8 +10,8 @@
 #include <Arduino.h>
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
-#endif
 #include <ThingSpeak.h>
+#endif
 #include <Timer.h>
 #include <SerialCommand.h>
 #include <DbgCliNode.h>
@@ -48,7 +48,9 @@ public:
   {
     Serial.println();
     Serial.print("Wifi MAC: ");
+#ifdef ESP8266
     Serial.println(WiFi.macAddress().c_str());
+#endif
     Serial.println();
   }
 };
@@ -67,7 +69,10 @@ public:
     // scan for nearby networks:
     Serial.println();
     Serial.println("** Scan Networks **");
+
+#ifdef ESP8266
     int numSsid = WiFi.scanNetworks();
+
     if (numSsid == -1)
     {
       Serial.println("Couldn't get a wifi connection");
@@ -93,13 +98,16 @@ public:
         printEncryptionType(WiFi.encryptionType(thisNet));
       }
     }
+#endif
     Serial.println();
   }
 private:
   void printEncryptionType(int thisType)
   {
+#ifdef ESP8266
     // read the encryption type and print out the name:
-    switch (thisType) {
+    switch (thisType)
+    {
       case ENC_TYPE_WEP:
         Serial.println("WEP");
         break;
@@ -119,7 +127,8 @@ private:
         Serial.println("Unknown");
         break;
     }
-  }
+#endif
+    }
 };
 
 class DbgCli_Cmd_WifiStat : public DbgCli_Command
@@ -131,6 +140,7 @@ public:
 
   void execute(unsigned int argc, const char** args, unsigned int idxToFirstArgToHandle)
   {
+#ifdef ESP8266
     wl_status_t wlStatus = WiFi.status();
     Serial.println();
     Serial.println(wlStatus == WL_NO_SHIELD       ? "NO_SHIELD      " :
@@ -143,7 +153,9 @@ public:
                    wlStatus == WL_DISCONNECTED    ? "DISCONNECTED   " : "UNKNOWN");
     Serial.println();
     WiFi.printDiag(Serial);
+    Serial.println("WiFi is not supported on current platform.");
     Serial.println();
+#endif
   }
 };
 
@@ -164,8 +176,12 @@ public:
     else
     {
       const bool DO_NOT_SET_wifioff = false;
+#ifdef ESP8266
       WiFi.disconnect(DO_NOT_SET_wifioff);
       Serial.println("WiFi is disconnected now.");
+#else
+      Serial.println("WiFi is not supported on current platform.");
+#endif
     }
     Serial.println();
   }
@@ -193,8 +209,12 @@ public:
     }
     else
     {
+#ifdef ESP8266
       WiFi.begin(args[idxToFirstArgToHandle], args[idxToFirstArgToHandle+1]);
       Serial.println("WiFi is connecting now.");
+#else
+      Serial.println("WiFi is not supported on current platform.");
+#endif
     }
    Serial.println();
   }
@@ -229,7 +249,9 @@ public:
       Serial.print(field);
       Serial.print(" - Value: ");
       Serial.println(static_cast<float>(atof(args[idxToFirstArgToHandle])), 2);
+#ifdef ESP8266
       ThingSpeak.setField(field, static_cast<float>(atof(args[idxToFirstArgToHandle])));
+#endif
     }
     else
     {
@@ -321,11 +343,14 @@ public:
     }
     else
     {
+      int status = -301;
       Serial.print("ThingSpeak write fields, Channel Id: ");
       Serial.print(thingSpeakChannelId);
       Serial.print(", API Key: ");
+#ifdef ESP8266
       Serial.println(thingSpeakAPIKey);
-      int status = ThingSpeak.writeFields(thingSpeakChannelId, thingSpeakAPIKey);
+      status = ThingSpeak.writeFields(thingSpeakChannelId, thingSpeakAPIKey);
+#endif
       Serial.print("ThingSpeak write done, result: ");
       Serial.println(status ==  200 ? "OK / Success                                                                           " :
                      status ==  404 ? "Incorrect API key (or invalid ThingSpeak server address)                               " :

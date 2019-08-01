@@ -8,12 +8,14 @@
 #include <Arduino.h>
 #include <DbgTracePort.h>
 #include <MemphisPulseSensorAdapter.h>
+
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
 #include <ESP.h>
-#endif
 #include <ThingSpeak.h>
 #include <ThingSpeakWrapper.h>
+#endif
+
 #include <MemphisMatrixDisplay.h>
 #include <String.h>
 #include <PolarPulse.h>
@@ -49,7 +51,9 @@ PolarPulse* MemphisPulseSensorAdapter::s_pulse = 0;
 MemphisPulseSensorAdapter::MemphisPulseSensorAdapter(int pulsePin, PolarPulse* polarPulse, MemphisMatrixDisplay* matrix)
 : m_trPort(new DbgTrace_Port("pulse", DbgTrace_Level::error))
 , m_matrix(matrix)
+#ifdef ESP8266
 , m_thingSpeakWrapper(new ThingSpeakWrapper())
+#endif
 {
   s_pulsePin = pulsePin;
   s_pulse = polarPulse;
@@ -67,8 +71,10 @@ MemphisPulseSensorAdapter::~MemphisPulseSensorAdapter()
   delete m_trPort;
   m_trPort = 0;
 
+#ifdef ESP8266
   delete m_thingSpeakWrapper;
   m_thingSpeakWrapper = 0;
+#endif
 }
 
 unsigned int MemphisPulseSensorAdapter::getCount()
@@ -83,11 +89,13 @@ unsigned int MemphisPulseSensorAdapter::getCount()
 
 void MemphisPulseSensorAdapter::notifyHeartBeatRate(unsigned int* heartBeatRate, unsigned char numOfValues)
 {
+#ifdef ESP8266
   for (unsigned char i = 0; i < numOfValues; i++)
   {
     ThingSpeak.setField(i+1, static_cast<int>(heartBeatRate[i]));
   }
   m_thingSpeakWrapper->triggerWriteFields();
+#endif
 }
 
 void MemphisPulseSensorAdapter::notifyHeartBeatRate(unsigned int heartBeatRate)

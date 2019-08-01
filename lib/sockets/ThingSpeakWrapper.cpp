@@ -5,9 +5,11 @@
  *      Author: dniklaus
  */
 
+#ifdef ESP8266
 #include <ESP8266WiFi.h>
 #include <ESP.h>
 #include <ThingSpeak.h>
+#endif
 #include <ConnectivitySecrets.h>
 #include <DbgTracePort.h>
 #include <DbgTraceLevel.h>
@@ -75,8 +77,10 @@ void ThingSpeakWrapper::checkWriteFields()
     if (isLanConnected)
     {
       m_writeFieldsFlag = false;
+#ifdef ESP8266
       ThingSpeak.writeFields(m_channelNumber, m_writeAPIKey);
       wdt_reset();
+#endif
       TR_PRINT_STR(m_trPort, DbgTrace_Level::debug, "Fields reported to ThingSpeak");
     }
     else

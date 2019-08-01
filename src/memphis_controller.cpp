@@ -9,11 +9,12 @@
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
-#endif
 // PlatformIO libraries
 #include <PubSubClient.h>   // pio lib install 89,   lib details see https://github.com/knolleary/PubSubClient
-#include <SerialCommand.h>  // pio lib install 173,  lib details see https://github.com/kroimon/Arduino-SerialCommand
 #include <ThingSpeak.h>     // pio lib install 550,  lib details see https://github.com/mathworks/thingspeak-arduino
+#endif
+// PlatformIO libraries
+#include <SerialCommand.h>  // pio lib install 173,  lib details see https://github.com/kroimon/Arduino-SerialCommand
 #include <ArduinoJson.h>    // pio lib install 64,   lib details see https://github.com/bblanchon/ArduinoJson
 #include <Timer.h>          // pio lib install 1699, lib details see https://github.com/dniklaus/wiring-timer
 #include <Adafruit_NeoPixel.h>
@@ -72,13 +73,14 @@ public:
 class MyBatteryAdapter : public BatteryAdapter
 {
 private:
-  Battery* m_battery;
   MemphisMatrixDisplay* m_matrix;
 
 public:
-  MyBatteryAdapter(Battery* battery, MemphisMatrixDisplay* matrix)
-  : m_battery(battery)
-  , m_matrix(matrix)
+  static const BatteryThresholdConfig s_battCfg;
+
+public:
+  MyBatteryAdapter(MemphisMatrixDisplay* matrix)
+  : m_matrix(matrix)
   { }
 
   virtual ~MyBatteryAdapter()
@@ -86,7 +88,7 @@ public:
 
   virtual float readBattVoltageSenseFactor()
   {
-    return 9.239;
+    return 2.0;
   }
 
   virtual unsigned int readRawBattSenseValue()
@@ -140,9 +142,9 @@ private:
   void showBattVoltage()
   {
     float battVoltage = 0.0;
-    if (0 != m_battery)
+    if (0 != battery())
     {
-      battVoltage = m_battery->getBatteryVoltage();
+      battVoltage = battery()->getBatteryVoltage();
     }
     Serial.print("Battery Voltage: ");
     Serial.print(battVoltage);
@@ -150,6 +152,11 @@ private:
   }
 };
 
+const BatteryThresholdConfig MyBatteryAdapter::s_battCfg = { 3.6, // BATT_WARN_THRSHD [V]
+                                                             3.4, // BATT_STOP_THRSHD [V]
+                                                             3.2, // BATT_SHUT_THRSHD [V]
+                                                             0.1  // BATT_HYST        [V]
+                                                           };
 Battery* battery = 0;
 MyBatteryAdapter* batteryAdapter = 0;
 
@@ -218,7 +225,7 @@ MemphisMatrixDisplay* matrix = 0;
 void setup()
 {
   pinMode(PULSE_IND_PIN, OUTPUT);
-  digitalWrite(PULSE_IND_PIN, 1);
+  digitalWrite(PULSE_IND_PIN, 0);
 
   setupProdDebugEnv();
 
@@ -261,12 +268,7 @@ void setup()
   //-----------------------------------------------------------------------------
   // Battery Voltage Surveillance
   //-----------------------------------------------------------------------------
-  battery = new Battery();
-  if (0 != battery)
-  {
-    batteryAdapter = new MyBatteryAdapter(battery, matrix);
-    battery->attachAdapter(batteryAdapter);
-  }
+  battery = new Battery(new MyBatteryAdapter(matrix), MyBatteryAdapter::s_battCfg);
 }
 
 void loop()

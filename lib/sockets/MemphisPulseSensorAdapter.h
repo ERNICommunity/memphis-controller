@@ -12,7 +12,10 @@
 
 class DbgTrace_Port;
 class MemphisMatrixDisplay;
+
+#ifdef ESP8266
 class ThingSpeakWrapper;
+#endif
 
 class MemphisPulseSensorAdapter: public PolarPulseAdapter
 {
@@ -30,7 +33,9 @@ public:
 private:
   DbgTrace_Port* m_trPort;
   MemphisMatrixDisplay* m_matrix;
+#ifdef ESP8266
   ThingSpeakWrapper* m_thingSpeakWrapper;
+#endif
 
 private:  // forbidden functions
   MemphisPulseSensorAdapter();                                                  // default constructor
