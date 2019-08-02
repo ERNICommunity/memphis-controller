@@ -14,7 +14,7 @@ The current branch (*refactor-showcase*) is designed for stability, so no networ
 
 ## Hardware
 The Hardware design is shown below:
-![BumpinHeart_Steckplatine](C:\git\pio-prj\memphis-controller\doc\design\hw\BumpinHeart_Steckplatine.png)
+![BumpinHeart_Steckplatine](doc\design\hw\BumpinHeart_Steckplatine.png)
 
 
 ## Toolchain
