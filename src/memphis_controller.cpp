@@ -171,7 +171,7 @@ private:
 public:
   PulseMockTimerAdapter(MemphisMatrixDisplay* matrix)
   : m_matrix(matrix)
-  , m_hbr(60)
+  , m_hbr(10)
   , m_isModulationIncreasing(true)
   { }
 
@@ -184,7 +184,7 @@ public:
 
     if (m_isModulationIncreasing)
     {
-      if (m_hbr < 91)
+      if (m_hbr < 10)
       {
         m_hbr++;
       }
@@ -195,7 +195,7 @@ public:
     }
     else
     {
-      if (m_hbr > 62)
+      if (m_hbr > 10)
       {
         m_hbr--;
       }

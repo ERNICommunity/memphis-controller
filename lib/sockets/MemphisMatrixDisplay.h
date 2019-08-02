@@ -10,6 +10,7 @@
 
 class Timer;
 class Adafruit_NeoMatrix;
+class DbgCli_Command;
 
 class MemphisMatrixDisplay
 {
@@ -18,12 +19,15 @@ public:
   virtual ~MemphisMatrixDisplay();
 
   void setHeartBeatRate(unsigned int heartBeatRate);
+  void showFirstFrame();
   void showNextFrame();
 
   void activateDisplay();
   void deactivateDisplay();
 
-  void selectFrame2(bool isFrame2);
+  void selectImage(unsigned int frame);
+
+  DbgCli_Topic* getCliTopicMatrix() { return m_dbgCliTopicMatrix; }
 
 
 private:
@@ -44,6 +48,8 @@ private:
   bool m_showHeart2;
   bool m_showHeart3;
   bool m_printText;
+  DbgCli_Topic* m_dbgCliTopicMatrix;
+  DbgCli_Command* m_dbgCliSelImageCmd;
 
 private:  // forbidden functions
   MemphisMatrixDisplay();                                             // default constructor
