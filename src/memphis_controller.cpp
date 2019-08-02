@@ -186,7 +186,12 @@ public:
   {
     if (0 != m_matrix)
     {
-      m_matrix->setHeartBeatRate(m_hbr);
+//      m_matrix->setHeartBeatRate(m_hbr);
+      if (0 != battery)
+      {
+        unsigned int battV = static_cast<unsigned int>(10 * battery->getBatteryVoltage());
+        m_matrix->setHeartBeatRate(battV);
+      }
     }
 
     if (m_isModulationIncreasing)

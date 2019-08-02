@@ -13,8 +13,8 @@ An animated GIF converted into RGB pixel information available in a 2-dimensiona
 The current branch (*refactor-showcase*) is designed for stability, so no network connectivity (no WiFi, no Thingspeak uplink) available. Furthermore the Pulse Heartbeat Sensor is not connected and a fictive heartbeat rate progression is simulated (HBR modulating between 62 and 91 beats per minute, changing every 2 seconds).
 
 ## Hardware
-1. The Hardware design is shown below:
-   ![Arkathon - Memphis_Steckplatine](doc/Arkathon-Memphis_Steckplatine.png)
+The Hardware design is shown below:
+![BumpinHeart_Steckplatine](C:\git\pio-prj\memphis-controller\doc\design\hw\BumpinHeart_Steckplatine.png)
 
 
 ## Toolchain
