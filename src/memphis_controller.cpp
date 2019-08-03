@@ -31,10 +31,6 @@
 #include <DbgTraceOut.h>
 #include <DbgPrintConsole.h>
 #include <DbgTraceLevel.h>
-//#include <MqttClientController.h>
-//#include <PubSubClientWrapper.h>
-//#include <MqttClient.h>
-//#include <MqttTopic.h>
 #include <string.h>
 #include <AppDebug.h>
 #include <ProductDebug.h>
@@ -42,10 +38,7 @@
 #include <MemphisPulseSensorAdapter.h>
 #include <MemphisMatrixDisplay.h>
 #include <Battery.h>
-
-//#define MQTT_SERVER "iot.eclipse.org"
-//#define MQTT_SERVER "test.mosquitto.org"
-//#define MQTT_SERVER "broker.hivemq.com"
+#include <ToggleButton.h>
 
 SerialCommand* sCmd = 0;
 
@@ -64,6 +57,51 @@ public:
   }
 };
 #endif
+
+//-----------------------------------------------------------------------------
+// Push Button
+//-----------------------------------------------------------------------------
+#define BUTTON_PIN 11
+ToggleButton* button = 0;
+
+class MyToggleButtonAdapter : public ToggleButtonAdapter
+{
+private:
+  MemphisMatrixDisplay* m_matrix;
+  unsigned int m_image;
+
+public:
+  MyToggleButtonAdapter(MemphisMatrixDisplay* matrix)
+  : m_matrix(matrix)
+  , m_image(2)
+  {
+    if (0 != m_matrix)
+    {
+      m_matrix->selectImage(m_image);
+      m_matrix->activateDisplay();
+    }
+  }
+
+  void notifyStatusChanged(bool isActive)
+  {
+    if (0 != m_matrix)
+    {
+      if (isActive)
+      {
+        if (m_image == 2)
+        {
+          m_image++;
+        }
+        else
+        {
+          m_image = 2;
+        }
+        m_matrix->selectImage(m_image);
+        m_matrix->activateDisplay();
+      }
+    }
+  }
+};
 
 //-----------------------------------------------------------------------------
 // Battery surveillance
@@ -93,7 +131,6 @@ public:
 
   virtual unsigned int readRawBattSenseValue()
   {
-//    showBattVoltage();
     unsigned int rawBattSenseValue = analogRead(BAT_SENSE_PIN);
     return rawBattSenseValue;
   }
@@ -259,6 +296,11 @@ void setup()
   {
     matrix->activateDisplay();
   }
+
+  //-----------------------------------------------------------------------------
+  // Push Button
+  //-----------------------------------------------------------------------------
+  button = new ToggleButton(BUTTON_PIN, ToggleButton::IND_NC, ToggleButton::IS_NEG_LOGIC, new MyToggleButtonAdapter(matrix));
 
   //-----------------------------------------------------------------------------
   // Pulse Sensor
