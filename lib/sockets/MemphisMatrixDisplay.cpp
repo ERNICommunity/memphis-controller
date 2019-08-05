@@ -303,6 +303,12 @@ void MemphisMatrixDisplay::updateDisplay()
   }
 }
 
+void MemphisMatrixDisplay::blankDisplay()
+{
+  m_neoMatrix->fillScreen(0);
+  m_neoMatrix->show();
+}
+
 void MemphisMatrixDisplay::updateText()
 {
   if (0 != m_neoMatrix)

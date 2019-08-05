@@ -29,6 +29,7 @@ public:
 
   DbgCli_Topic* getCliTopicMatrix() { return m_dbgCliTopicMatrix; }
 
+  void blankDisplay();
 
 private:
   uint16_t drawRGB24toRGB565(byte r, byte g, byte b);

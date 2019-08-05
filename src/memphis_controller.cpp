@@ -73,12 +73,19 @@ private:
 public:
   MyToggleButtonAdapter(MemphisMatrixDisplay* matrix)
   : m_matrix(matrix)
-  , m_image(2)
+  , m_image(4)
   {
     if (0 != m_matrix)
     {
-      m_matrix->selectImage(m_image);
-      m_matrix->activateDisplay();
+      if (4 == m_image)
+      {
+        m_matrix->blankDisplay();
+      }
+      else
+      {
+        m_matrix->selectImage(m_image);
+        m_matrix->activateDisplay();
+      }
     }
   }
 
@@ -88,16 +95,17 @@ public:
     {
       if (isActive)
       {
-        if (m_image == 2)
+        if (m_image == 4)
         {
-          m_image++;
+          m_matrix->blankDisplay();
+          m_image = 2;
         }
         else
         {
-          m_image = 2;
+          m_matrix->selectImage(m_image);
+          m_matrix->activateDisplay();
+          m_image++;
         }
-        m_matrix->selectImage(m_image);
-        m_matrix->activateDisplay();
       }
     }
   }
@@ -195,7 +203,6 @@ const BatteryThresholdConfig MyBatteryAdapter::s_battCfg = { 3.6, // BATT_WARN_T
                                                              0.1  // BATT_HYST        [V]
                                                            };
 Battery* battery = 0;
-MyBatteryAdapter* batteryAdapter = 0;
 
 //-----------------------------------------------------------------------------
 // Pulse Sensor
