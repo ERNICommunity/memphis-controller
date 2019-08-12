@@ -39,6 +39,7 @@
 #include <MemphisMatrixDisplay.h>
 #include <Battery.h>
 #include <ToggleButton.h>
+#include <CmdSequence.h>
 
 SerialCommand* sCmd = 0;
 
@@ -77,15 +78,15 @@ public:
   {
     if (0 != m_matrix)
     {
-      if (4 == m_image)
-      {
-        m_matrix->blankDisplay();
-      }
-      else
-      {
-        m_matrix->selectImage(m_image);
-        m_matrix->activateDisplay();
-      }
+//      if (4 == m_image)
+//      {
+//        m_matrix->blankDisplay();
+//      }
+//      else
+//      {
+//        m_matrix->selectImage(m_image);
+//        m_matrix->activateDisplay();
+//      }
     }
   }
 
@@ -93,20 +94,20 @@ public:
   {
     if (0 != m_matrix)
     {
-      if (isActive)
-      {
-        if (m_image == 4)
-        {
-          m_matrix->blankDisplay();
-          m_image = 2;
-        }
-        else
-        {
-          m_matrix->selectImage(m_image);
-          m_matrix->activateDisplay();
-          m_image++;
-        }
-      }
+//      if (isActive)
+//      {
+//        if (m_image == 4)
+//        {
+//          m_matrix->blankDisplay();
+//          m_image = 2;
+//        }
+//        else
+//        {
+//          m_matrix->selectImage(m_image);
+//          m_matrix->activateDisplay();
+//          m_image++;
+//        }
+//      }
     }
   }
 };
@@ -114,7 +115,11 @@ public:
 //-----------------------------------------------------------------------------
 // Battery surveillance
 //-----------------------------------------------------------------------------
-#define BAT_SENSE_PIN A0
+#if defined (ARDUINO_ARCH_SAMD) && defined (__SAMD21G18A__) // Adafruit Feather M0
+  #define BAT_SENSE_PIN A7
+#else
+  #define BAT_SENSE_PIN A0
+#endif
 
 class MyBatteryAdapter : public BatteryAdapter
 {
@@ -149,7 +154,7 @@ public:
     showBattVoltage();
     if (0 != m_matrix)
     {
-      m_matrix->activateDisplay();
+//      m_matrix->activateDisplay();
     }
   }
 
@@ -159,7 +164,6 @@ public:
     showBattVoltage();
     if (0 != m_matrix)
     {
-      m_matrix->activateDisplay();
     }
   }
 
@@ -169,7 +173,6 @@ public:
     showBattVoltage();
     if (0 != m_matrix)
     {
-      m_matrix->activateDisplay();
     }
   }
 
@@ -179,7 +182,6 @@ public:
     showBattVoltage();
     if (0 != m_matrix)
     {
-      m_matrix->deactivateDisplay();
     }
   }
 
@@ -222,7 +224,7 @@ private:
 public:
   PulseMockTimerAdapter(MemphisMatrixDisplay* matrix)
   : m_matrix(matrix)
-  , m_hbr(60)
+  , m_hbr(25)
   , m_isModulationIncreasing(true)
   { }
 
@@ -230,17 +232,17 @@ public:
   {
     if (0 != m_matrix)
     {
-//      m_matrix->setHeartBeatRate(m_hbr);
-      if (0 != battery)
-      {
-        unsigned int battV = static_cast<unsigned int>(10 * battery->getBatteryVoltage());
-        m_matrix->setHeartBeatRate(battV);
-      }
+      m_matrix->setHeartBeatRate(m_hbr);
+//      if (0 != battery)
+//      {
+//        unsigned int battV = static_cast<unsigned int>(10 * battery->getBatteryVoltage());
+//        m_matrix->setHeartBeatRate(battV);
+//      }
     }
 
     if (m_isModulationIncreasing)
     {
-      if (m_hbr < 91)
+      if (m_hbr < 25)
       {
         m_hbr++;
       }
@@ -251,7 +253,7 @@ public:
     }
     else
     {
-      if (m_hbr > 62)
+      if (m_hbr > 25)
       {
         m_hbr--;
       }
@@ -301,7 +303,7 @@ void setup()
   matrix = new MemphisMatrixDisplay(NEO_PIN);
   if (0 != matrix)
   {
-    matrix->activateDisplay();
+    matrix->deactivateDisplay();
   }
 
   //-----------------------------------------------------------------------------

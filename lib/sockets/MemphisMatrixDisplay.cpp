@@ -14,6 +14,9 @@
 #include <DbgCliNode.h>
 #include <DbgCliCommand.h>
 #include <Timer.h>
+#include <CmdSequence.h>
+#include <CmdAdapter.h>
+#include <Cmd.h>
 #include <MemphisMatrixDisplay.h>
 
 //-----------------------------------------------------------------------------
@@ -33,24 +36,164 @@ public:
 
   void execute(unsigned int argc, const char** args, unsigned int idxToFirstArgToHandle)
   {
-    if (argc - idxToFirstArgToHandle != 1)
+    if (0 != m_matrix)
     {
-//      printUsage();
-    }
-    else
-    {
-      if (0 != m_matrix)
+      if (argc - idxToFirstArgToHandle == 0)
       {
-        m_matrix->selectImage(atoi(args[idxToFirstArgToHandle]));
-        m_matrix->showFirstFrame();
+        Serial.print("Selected Image to be shown on Display is ");
+        Serial.println(m_matrix->selectedImage());
+      }
+      else if (argc - idxToFirstArgToHandle == 1)
+      {
+        unsigned int img = atoi(args[idxToFirstArgToHandle]);
+        m_matrix->selectImage(img);
+        Serial.print("Selected Image to be shown on Display is ");
+        Serial.println(m_matrix->selectedImage());
+      }
+      else
+      {
+        printUsage();
       }
     }
+  }
+
+  void printUsage()
+  {
+    Serial.println("");
+    Serial.println(getHelpText());
+    Serial.println("");
+    Serial.println("usage: dbg matrix selimg [<image>]");
+    Serial.println("");
+    Serial.println("           image  Image to be shown (0: blank (power off), 1: Arkathon Heart, 2: ERNI Heart, 3: SBB Heart)");
+    Serial.println("                  optional parameter, shows currently shown image if omitted");
+    Serial.println("");
   }
 
 private:  // forbidden functions
   MatrixDbgCmd_SelImage();                                              // default constructor
   MatrixDbgCmd_SelImage(const MatrixDbgCmd_SelImage& src);              // copy constructor
   MatrixDbgCmd_SelImage& operator = (const MatrixDbgCmd_SelImage& src); // assignment operator
+};
+
+//-----------------------------------------------------------------------------
+
+class MatrixDbgCmd_RunSequence : public DbgCli_Command
+{
+private:
+  MemphisMatrixDisplay* m_matrix;
+
+public:
+  MatrixDbgCmd_RunSequence(MemphisMatrixDisplay* matrix)
+  : DbgCli_Command(matrix->getCliTopicMatrix(), "runseq", "Start or stop the Image Sequence.")
+  , m_matrix(matrix)
+  { }
+
+  virtual ~MatrixDbgCmd_RunSequence() { }
+
+  void execute(unsigned int argc, const char** args, unsigned int idxToFirstArgToHandle)
+  {
+    if ((0 != m_matrix) && (0 != m_matrix->imageSequence()))
+    {
+      if (argc - idxToFirstArgToHandle == 0)
+      {
+        Serial.print("The Image Sequence is ");
+        Serial.println(m_matrix->imageSequence()->isRunning() ? "running." : "not running.");
+      }
+      else if (argc - idxToFirstArgToHandle == 1)
+      {
+        bool runSequence = atoi(args[idxToFirstArgToHandle]);
+        Serial.print("The Image Sequence is ");
+        Serial.println(runSequence ? "running." : "not running.");
+        if (runSequence)
+        {
+          m_matrix->imageSequence()->start();
+        }
+        else
+        {
+          m_matrix->imageSequence()->stop();
+        }
+      }
+      else
+      {
+        printUsage();
+      }
+    }
+  }
+
+  void printUsage()
+  {
+    Serial.println("");
+    Serial.println(getHelpText());
+    Serial.println("");
+    Serial.println("usage: dbg matrix runseq [{0|1}]");
+    Serial.println("");
+    Serial.println("           0:  Image Sequence not running");
+    Serial.println("           1:  Image Sequence running");
+    Serial.println("               optional parameter, shows current state if omitted");
+    Serial.println("");
+  }
+
+private:  // forbidden functions
+  MatrixDbgCmd_RunSequence();                                                     // default constructor
+  MatrixDbgCmd_RunSequence(const MatrixDbgCmd_RunSequence& src);              // copy constructor
+  MatrixDbgCmd_RunSequence& operator = (const MatrixDbgCmd_RunSequence& src); // assignment operator
+};
+
+//-----------------------------------------------------------------------------
+
+class MatrixDbgCmd_TxtEna : public DbgCli_Command
+{
+private:
+  MemphisMatrixDisplay* m_matrix;
+
+public:
+  MatrixDbgCmd_TxtEna(MemphisMatrixDisplay* matrix)
+  : DbgCli_Command(matrix->getCliTopicMatrix(), "txten", "Set Text enabled on Display.")
+  , m_matrix(matrix)
+  { }
+
+  virtual ~MatrixDbgCmd_TxtEna() { }
+
+  void execute(unsigned int argc, const char **args, unsigned int idxToFirstArgToHandle)
+  {
+    if (0 != m_matrix)
+    {
+      if (argc - idxToFirstArgToHandle == 0)
+      {
+        Serial.print("Printing Text on Display is ");
+        Serial.println(m_matrix->isPrintText() ? "enabled" : "disabled");
+      }
+      else if (argc - idxToFirstArgToHandle == 1)
+      {
+        bool printText = atoi(args[idxToFirstArgToHandle]);
+        m_matrix->setIstPrintText(printText);
+        Serial.print("Printing Text on Display is ");
+        Serial.println(m_matrix->isPrintText() ? "enabled" : "disabled");
+      }
+      else
+      {
+        printUsage();
+      }
+    }
+  }
+
+  void printUsage()
+  {
+    Serial.println("");
+    Serial.println(getHelpText());
+    Serial.println("");
+    Serial.println("usage: dbg matrix txten [{0|1}]");
+    Serial.println("");
+    Serial.println("           0:  Text overlay not shown");
+    Serial.println("           1:  Text overlay shown");
+    Serial.println("               optional parameter, shows current state if omitted");
+    Serial.println("");
+  }
+
+private:  // forbidden functions
+  MatrixDbgCmd_TxtEna();                                            // default constructor
+  MatrixDbgCmd_TxtEna(const MatrixDbgCmd_TxtEna& src);              // copy constructor
+  MatrixDbgCmd_TxtEna& operator = (const MatrixDbgCmd_TxtEna& src); // assignment operator
 };
 
 //-----------------------------------------------------------------------------
@@ -71,6 +214,69 @@ public:
       m_matrixDisplay->showNextFrame();
     }
   }
+};
+
+//-----------------------------------------------------------------------------
+
+class MyCmdSeqAdapter : public CmdAdapter
+{
+private:
+  MemphisMatrixDisplay* m_matrix;
+
+public:
+  MyCmdSeqAdapter(MemphisMatrixDisplay* matrix)
+  : m_matrix(matrix)
+  { }
+
+  void stopAction()
+  {
+    if (0 != m_matrix)
+    {
+      m_matrix->deactivateDisplay();
+    }
+  }
+
+  void selectImageAction(int image)
+  {
+    if (0 != m_matrix)
+    {
+      Serial.print("selectImageAction() - image: ");
+      Serial.println(image);
+      m_matrix->selectImage(image);
+    }
+  }
+};
+
+//-----------------------------------------------------------------------------
+
+class CmdShowImage : public Cmd
+{
+private:
+  unsigned int m_imge;
+  static const long int c_waitForever = -1;
+
+public:
+  CmdShowImage(CmdSequence* cmdSeq, const char* name, unsigned int imge)
+  : Cmd(cmdSeq, c_waitForever, name)
+  , m_imge(imge)
+  { }
+
+  void execute()
+  {
+    if (0 != cmdSequence())
+    {
+      MyCmdSeqAdapter* adapter = static_cast<MyCmdSeqAdapter*>(cmdSequence()->adapter());
+      if (0 != adapter)
+      {
+        adapter->selectImageAction(m_imge);
+      }
+    }
+  }
+
+private: // forbidden default functions
+  CmdShowImage();                                     // default constructor
+  CmdShowImage& operator = (const CmdShowImage& src); // assignment operator
+  CmdShowImage(const CmdShowImage& src);              // copy constructor
 };
 
 //-----------------------------------------------------------------------------
@@ -144,7 +350,7 @@ const unsigned char heartbeating1Frame[][CS_NColors][MemphisMatrixDisplay::s_mat
 };
 
 // Animated-Heart ERNI
-#define heartbeating2NUM_FRM 6
+#define heartbeating2NUM_FRM 8
 // [heartbeating2NUM_FRM][CS_NColors][MemphisMatrixDisplay::s_matrixEdgeLength * MemphisMatrixDisplay::s_matrixEdgeLength]
 const unsigned char heartbeating2Frame[][CS_NColors][MemphisMatrixDisplay::s_matrixEdgeLength * MemphisMatrixDisplay::s_matrixEdgeLength] =
 {
@@ -177,11 +383,21 @@ const unsigned char heartbeating2Frame[][CS_NColors][MemphisMatrixDisplay::s_mat
       {0,0,0,0,0,3,3,3,3,3,3,0,0,0,0,0,0,0,0,3,3,3,3,3,3,3,3,3,3,0,0,0,0,3,3,3,3,3,3,3,255,255,255,3,3,3,3,0,0,3,3,3,3,3,3,255,255,255,255,255,3,3,3,0,0,3,3,3,3,3,255,255,255,3,3,255,255,3,3,0,0,3,3,3,3,255,255,255,3,3,3,3,255,3,3,0,0,3,3,3,3,255,255,3,3,3,3,3,255,3,3,0,0,3,3,3,3,255,255,255,3,3,255,255,3,3,3,0,0,0,3,3,3,255,255,255,255,255,3,3,3,3,0,0,0,0,3,255,3,255,255,3,3,3,3,3,3,3,0,0,0,0,0,3,3,255,255,3,3,3,3,3,255,0,0,0,0,0,0,3,3,3,255,255,3,3,255,255,3,0,0,0,0,0,0,0,3,3,3,255,255,255,255,3,0,0,0,0,0,0,0,0,0,3,3,3,3,3,3,0,0,0,0,0,0,0,0,0,0,0,3,3,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,0,0,0,0,0,0,0},
       {0,0,0,0,0,55,55,55,55,55,55,0,0,0,0,0,0,0,0,55,55,55,55,55,55,55,55,55,55,0,0,0,0,55,55,55,55,55,55,55,255,255,255,55,55,55,55,0,0,55,55,55,55,55,55,255,255,255,255,255,55,55,55,0,0,55,55,55,55,55,255,255,255,55,55,255,255,55,55,0,0,55,55,55,55,255,255,255,55,55,55,55,255,55,55,0,0,55,55,55,55,255,255,55,55,55,55,55,255,55,55,0,0,55,55,55,55,255,255,255,55,55,255,255,55,55,55,0,0,0,55,55,55,255,255,255,255,255,55,55,55,55,0,0,0,0,55,255,55,255,255,55,55,55,55,55,55,55,0,0,0,0,0,55,55,255,255,55,55,55,55,55,255,0,0,0,0,0,0,55,55,55,255,255,55,55,255,255,55,0,0,0,0,0,0,0,55,55,55,255,255,255,255,55,0,0,0,0,0,0,0,0,0,55,55,55,55,55,55,0,0,0,0,0,0,0,0,0,0,0,55,55,55,55,0,0,0,0,0,0,0,0,0,0,0,0,0,55,55,0,0,0,0,0,0,0},
       {0,0,0,0,0,120,120,120,120,120,120,0,0,0,0,0,0,0,0,120,120,120,120,120,120,120,120,120,120,0,0,0,0,120,120,120,120,120,120,120,255,255,255,120,120,120,120,0,0,120,120,120,120,120,120,255,255,255,255,255,120,120,120,0,0,120,120,120,120,120,255,255,255,120,120,255,255,120,120,0,0,120,120,120,120,255,255,255,120,120,120,120,255,120,120,0,0,120,120,120,120,255,255,120,120,120,120,120,255,120,120,0,0,120,120,120,120,255,255,255,120,120,255,255,120,120,120,0,0,0,120,120,120,255,255,255,255,255,120,120,120,120,0,0,0,0,120,255,120,255,255,120,120,120,120,120,120,120,0,0,0,0,0,120,120,255,255,120,120,120,120,120,255,0,0,0,0,0,0,120,120,120,255,255,120,120,255,255,120,0,0,0,0,0,0,0,120,120,120,255,255,255,255,120,0,0,0,0,0,0,0,0,0,120,120,120,120,120,120,0,0,0,0,0,0,0,0,0,0,0,120,120,120,120,0,0,0,0,0,0,0,0,0,0,0,0,0,120,120,0,0,0,0,0,0,0}
+    },
+    {
+      {0,0,0,0,0,3,3,3,3,3,3,0,0,0,0,0,0,0,0,3,3,3,3,3,3,3,3,3,3,0,0,0,0,3,3,3,3,3,3,3,255,255,255,3,3,3,3,0,0,3,3,3,3,3,3,255,255,255,255,255,3,3,3,0,0,3,3,3,3,3,255,255,255,3,3,255,255,3,3,0,0,3,3,3,3,255,255,255,3,3,3,3,255,3,3,0,0,3,3,3,3,255,255,3,3,3,3,3,255,3,3,0,0,3,3,3,3,255,255,255,3,3,255,255,3,3,3,0,0,0,3,3,3,255,255,255,255,255,3,3,3,3,0,0,0,0,3,255,3,255,255,3,3,3,3,3,3,3,0,0,0,0,0,3,3,255,255,3,3,3,3,3,255,0,0,0,0,0,0,3,3,3,255,255,3,3,255,255,3,0,0,0,0,0,0,0,3,3,3,255,255,255,255,3,0,0,0,0,0,0,0,0,0,3,3,3,3,3,3,0,0,0,0,0,0,0,0,0,0,0,3,3,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,0,0,0,0,0,0,0},
+      {0,0,0,0,0,55,55,55,55,55,55,0,0,0,0,0,0,0,0,55,55,55,55,55,55,55,55,55,55,0,0,0,0,55,55,55,55,55,55,55,255,255,255,55,55,55,55,0,0,55,55,55,55,55,55,255,255,255,255,255,55,55,55,0,0,55,55,55,55,55,255,255,255,55,55,255,255,55,55,0,0,55,55,55,55,255,255,255,55,55,55,55,255,55,55,0,0,55,55,55,55,255,255,55,55,55,55,55,255,55,55,0,0,55,55,55,55,255,255,255,55,55,255,255,55,55,55,0,0,0,55,55,55,255,255,255,255,255,55,55,55,55,0,0,0,0,55,255,55,255,255,55,55,55,55,55,55,55,0,0,0,0,0,55,55,255,255,55,55,55,55,55,255,0,0,0,0,0,0,55,55,55,255,255,55,55,255,255,55,0,0,0,0,0,0,0,55,55,55,255,255,255,255,55,0,0,0,0,0,0,0,0,0,55,55,55,55,55,55,0,0,0,0,0,0,0,0,0,0,0,55,55,55,55,0,0,0,0,0,0,0,0,0,0,0,0,0,55,55,0,0,0,0,0,0,0},
+      {0,0,0,0,0,120,120,120,120,120,120,0,0,0,0,0,0,0,0,120,120,120,120,120,120,120,120,120,120,0,0,0,0,120,120,120,120,120,120,120,255,255,255,120,120,120,120,0,0,120,120,120,120,120,120,255,255,255,255,255,120,120,120,0,0,120,120,120,120,120,255,255,255,120,120,255,255,120,120,0,0,120,120,120,120,255,255,255,120,120,120,120,255,120,120,0,0,120,120,120,120,255,255,120,120,120,120,120,255,120,120,0,0,120,120,120,120,255,255,255,120,120,255,255,120,120,120,0,0,0,120,120,120,255,255,255,255,255,120,120,120,120,0,0,0,0,120,255,120,255,255,120,120,120,120,120,120,120,0,0,0,0,0,120,120,255,255,120,120,120,120,120,255,0,0,0,0,0,0,120,120,120,255,255,120,120,255,255,120,0,0,0,0,0,0,0,120,120,120,255,255,255,255,120,0,0,0,0,0,0,0,0,0,120,120,120,120,120,120,0,0,0,0,0,0,0,0,0,0,0,120,120,120,120,0,0,0,0,0,0,0,0,0,0,0,0,0,120,120,0,0,0,0,0,0,0}
+    },
+    {
+      {0,0,0,0,0,3,3,3,3,3,3,0,0,0,0,0,0,0,0,3,3,3,3,3,3,3,3,3,3,0,0,0,0,3,3,3,3,3,3,3,255,255,255,3,3,3,3,0,0,3,3,3,3,3,3,255,255,255,255,255,3,3,3,0,0,3,3,3,3,3,255,255,255,3,3,255,255,3,3,0,0,3,3,3,3,255,255,255,3,3,3,3,255,3,3,0,0,3,3,3,3,255,255,3,3,3,3,3,255,3,3,0,0,3,3,3,3,255,255,255,3,3,255,255,3,3,3,0,0,0,3,3,3,255,255,255,255,255,3,3,3,3,0,0,0,0,3,255,3,255,255,3,3,3,3,3,3,3,0,0,0,0,0,3,3,255,255,3,3,3,3,3,255,0,0,0,0,0,0,3,3,3,255,255,3,3,255,255,3,0,0,0,0,0,0,0,3,3,3,255,255,255,255,3,0,0,0,0,0,0,0,0,0,3,3,3,3,3,3,0,0,0,0,0,0,0,0,0,0,0,3,3,3,3,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,0,0,0,0,0,0,0},
+      {0,0,0,0,0,55,55,55,55,55,55,0,0,0,0,0,0,0,0,55,55,55,55,55,55,55,55,55,55,0,0,0,0,55,55,55,55,55,55,55,255,255,255,55,55,55,55,0,0,55,55,55,55,55,55,255,255,255,255,255,55,55,55,0,0,55,55,55,55,55,255,255,255,55,55,255,255,55,55,0,0,55,55,55,55,255,255,255,55,55,55,55,255,55,55,0,0,55,55,55,55,255,255,55,55,55,55,55,255,55,55,0,0,55,55,55,55,255,255,255,55,55,255,255,55,55,55,0,0,0,55,55,55,255,255,255,255,255,55,55,55,55,0,0,0,0,55,255,55,255,255,55,55,55,55,55,55,55,0,0,0,0,0,55,55,255,255,55,55,55,55,55,255,0,0,0,0,0,0,55,55,55,255,255,55,55,255,255,55,0,0,0,0,0,0,0,55,55,55,255,255,255,255,55,0,0,0,0,0,0,0,0,0,55,55,55,55,55,55,0,0,0,0,0,0,0,0,0,0,0,55,55,55,55,0,0,0,0,0,0,0,0,0,0,0,0,0,55,55,0,0,0,0,0,0,0},
+      {0,0,0,0,0,120,120,120,120,120,120,0,0,0,0,0,0,0,0,120,120,120,120,120,120,120,120,120,120,0,0,0,0,120,120,120,120,120,120,120,255,255,255,120,120,120,120,0,0,120,120,120,120,120,120,255,255,255,255,255,120,120,120,0,0,120,120,120,120,120,255,255,255,120,120,255,255,120,120,0,0,120,120,120,120,255,255,255,120,120,120,120,255,120,120,0,0,120,120,120,120,255,255,120,120,120,120,120,255,120,120,0,0,120,120,120,120,255,255,255,120,120,255,255,120,120,120,0,0,0,120,120,120,255,255,255,255,255,120,120,120,120,0,0,0,0,120,255,120,255,255,120,120,120,120,120,120,120,0,0,0,0,0,120,120,255,255,120,120,120,120,120,255,0,0,0,0,0,0,120,120,120,255,255,120,120,255,255,120,0,0,0,0,0,0,0,120,120,120,255,255,255,255,120,0,0,0,0,0,0,0,0,0,120,120,120,120,120,120,0,0,0,0,0,0,0,0,0,0,0,120,120,120,120,0,0,0,0,0,0,0,0,0,0,0,0,0,120,120,0,0,0,0,0,0,0}
     }
 };
 
 // Animated-Heart SBB
-#define heartbeating3NUM_FRM 6
+#define heartbeating3NUM_FRM 8
 // [heartbeating3NUM_FRM][CS_NColors][MemphisMatrixDisplay::s_matrixEdgeLength * MemphisMatrixDisplay::s_matrixEdgeLength]
 const unsigned char heartbeating3Frame[][CS_NColors][MemphisMatrixDisplay::s_matrixEdgeLength * MemphisMatrixDisplay::s_matrixEdgeLength] =
 {
@@ -214,6 +430,16 @@ const unsigned char heartbeating3Frame[][CS_NColors][MemphisMatrixDisplay::s_mat
     {237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,255,255,237,255,255,237,255,255,237,237,237,237,237,237,237,255,255,237,237,255,255,237,237,255,255,237,237,237,237,237,255,255,237,237,237,255,255,237,237,237,255,255,237,237,237,255,255,255,255,255,255,255,255,255,255,255,255,255,255,237,237,255,255,255,255,255,255,255,255,255,255,255,255,255,255,237,237,237,255,255,237,237,237,255,255,237,237,237,255,255,237,237,237,237,237,255,255,237,237,255,255,237,237,255,255,237,237,237,237,237,237,237,255,255,237,255,255,237,255,255,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237},
     {27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,255,255,27,255,255,27,255,255,27,27,27,27,27,27,27,255,255,27,27,255,255,27,27,255,255,27,27,27,27,27,255,255,27,27,27,255,255,27,27,27,255,255,27,27,27,255,255,255,255,255,255,255,255,255,255,255,255,255,255,27,27,255,255,255,255,255,255,255,255,255,255,255,255,255,255,27,27,27,255,255,27,27,27,255,255,27,27,27,255,255,27,27,27,27,27,255,255,27,27,255,255,27,27,255,255,27,27,27,27,27,27,27,255,255,27,255,255,27,255,255,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27},
     {52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,255,255,52,255,255,52,255,255,52,52,52,52,52,52,52,255,255,52,52,255,255,52,52,255,255,52,52,52,52,52,255,255,52,52,52,255,255,52,52,52,255,255,52,52,52,255,255,255,255,255,255,255,255,255,255,255,255,255,255,52,52,255,255,255,255,255,255,255,255,255,255,255,255,255,255,52,52,52,255,255,52,52,52,255,255,52,52,52,255,255,52,52,52,52,52,255,255,52,52,255,255,52,52,255,255,52,52,52,52,52,52,52,255,255,52,255,255,52,255,255,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52}
+  },
+  {
+    {237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,255,255,237,255,255,237,255,255,237,237,237,237,237,237,237,255,255,237,237,255,255,237,237,255,255,237,237,237,237,237,255,255,237,237,237,255,255,237,237,237,255,255,237,237,237,255,255,255,255,255,255,255,255,255,255,255,255,255,255,237,237,255,255,255,255,255,255,255,255,255,255,255,255,255,255,237,237,237,255,255,237,237,237,255,255,237,237,237,255,255,237,237,237,237,237,255,255,237,237,255,255,237,237,255,255,237,237,237,237,237,237,237,255,255,237,255,255,237,255,255,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237},
+    {27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,255,255,27,255,255,27,255,255,27,27,27,27,27,27,27,255,255,27,27,255,255,27,27,255,255,27,27,27,27,27,255,255,27,27,27,255,255,27,27,27,255,255,27,27,27,255,255,255,255,255,255,255,255,255,255,255,255,255,255,27,27,255,255,255,255,255,255,255,255,255,255,255,255,255,255,27,27,27,255,255,27,27,27,255,255,27,27,27,255,255,27,27,27,27,27,255,255,27,27,255,255,27,27,255,255,27,27,27,27,27,27,27,255,255,27,255,255,27,255,255,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27},
+    {52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,255,255,52,255,255,52,255,255,52,52,52,52,52,52,52,255,255,52,52,255,255,52,52,255,255,52,52,52,52,52,255,255,52,52,52,255,255,52,52,52,255,255,52,52,52,255,255,255,255,255,255,255,255,255,255,255,255,255,255,52,52,255,255,255,255,255,255,255,255,255,255,255,255,255,255,52,52,52,255,255,52,52,52,255,255,52,52,52,255,255,52,52,52,52,52,255,255,52,52,255,255,52,52,255,255,52,52,52,52,52,52,52,255,255,52,255,255,52,255,255,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52}
+  },
+  {
+    {237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,255,255,237,255,255,237,255,255,237,237,237,237,237,237,237,255,255,237,237,255,255,237,237,255,255,237,237,237,237,237,255,255,237,237,237,255,255,237,237,237,255,255,237,237,237,255,255,255,255,255,255,255,255,255,255,255,255,255,255,237,237,255,255,255,255,255,255,255,255,255,255,255,255,255,255,237,237,237,255,255,237,237,237,255,255,237,237,237,255,255,237,237,237,237,237,255,255,237,237,255,255,237,237,255,255,237,237,237,237,237,237,237,255,255,237,255,255,237,255,255,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237,237},
+    {27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,255,255,27,255,255,27,255,255,27,27,27,27,27,27,27,255,255,27,27,255,255,27,27,255,255,27,27,27,27,27,255,255,27,27,27,255,255,27,27,27,255,255,27,27,27,255,255,255,255,255,255,255,255,255,255,255,255,255,255,27,27,255,255,255,255,255,255,255,255,255,255,255,255,255,255,27,27,27,255,255,27,27,27,255,255,27,27,27,255,255,27,27,27,27,27,255,255,27,27,255,255,27,27,255,255,27,27,27,27,27,27,27,255,255,27,255,255,27,255,255,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27,27},
+    {52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,255,255,52,255,255,52,255,255,52,52,52,52,52,52,52,255,255,52,52,255,255,52,52,255,255,52,52,52,52,52,255,255,52,52,52,255,255,52,52,52,255,255,52,52,52,255,255,255,255,255,255,255,255,255,255,255,255,255,255,52,52,255,255,255,255,255,255,255,255,255,255,255,255,255,255,52,52,52,255,255,52,52,52,255,255,52,52,52,255,255,52,52,52,52,52,255,255,52,52,255,255,52,52,255,255,52,52,52,52,52,52,52,255,255,52,255,255,52,255,255,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52,52}
   }
 };
 
@@ -223,20 +449,25 @@ MemphisMatrixDisplay::MemphisMatrixDisplay(uint8_t pin)
 , m_heartAnimationTimer(new Timer(new HeartAnimationTimerAdapter(this), Timer::IS_RECURRING))
 , m_frame(0)
 , m_isDisplayActive(false)
-, m_showHeart2(true)
-, m_showHeart3(false)
-, m_printText(true)
+, m_selectedImage(0)
+, m_imageSequence(new CmdSequence(new MyCmdSeqAdapter(this)))
+, m_printText(false)
 , m_dbgCliTopicMatrix(new DbgCli_Topic(DbgCli_Node::RootNode(), "matrix", "Display Matrix."))
 , m_dbgCliSelImageCmd(new MatrixDbgCmd_SelImage(this))
+, m_dbgCliRunSequenceCmd(new MatrixDbgCmd_RunSequence(this))
+, m_dbgCliTxtEnaCmd(new MatrixDbgCmd_TxtEna(this))
 {
   if (0 != m_neoMatrix)
   {
     m_neoMatrix->begin();
     m_neoMatrix->setTextWrap(false);
-    m_neoMatrix->setBrightness(10);
+    m_neoMatrix->setBrightness(20);
     m_neoMatrix->setFont(&TomThumb);
     m_neoMatrix->setTextColor(colors[CS_blue]);
   }
+  selectImage(m_selectedImage);
+  prepareImageSequence();
+  m_imageSequence->stop();
 }
 
 MemphisMatrixDisplay::~MemphisMatrixDisplay()
@@ -251,11 +482,25 @@ MemphisMatrixDisplay::~MemphisMatrixDisplay()
   m_neoMatrix = 0;
 }
 
+void MemphisMatrixDisplay::prepareImageSequence()
+{
+  new CmdShowImage(m_imageSequence, "ERNIHeart1", 2);
+  new CmdShowImage(m_imageSequence, "ERNIHeart2", 2);
+  new CmdShowImage(m_imageSequence, "SBBHeart1",  3);
+  Cmd* lastCmd = new CmdShowImage(m_imageSequence, "SBBHeart2", 3);
+  lastCmd->setNext(m_imageSequence->getFirstCmd());
+}
+
+CmdSequence* MemphisMatrixDisplay::imageSequence()
+{
+  return m_imageSequence;
+}
+
 void MemphisMatrixDisplay::setHeartBeatRate(unsigned int heartBeatRate)
 {
   m_heartBeatRate = heartBeatRate;
-  const unsigned int numFrm = m_showHeart2 ? heartbeating2NUM_FRM :
-                              m_showHeart3 ? heartbeating3NUM_FRM : heartbeating1NUM_FRM;
+  const unsigned int numFrm = (m_selectedImage == 2) ? heartbeating2NUM_FRM :
+                              (m_selectedImage == 3) ? heartbeating3NUM_FRM : heartbeating1NUM_FRM;
   if (0 != m_heartAnimationTimer)
   {
     if (0 != m_heartBeatRate)
@@ -281,25 +526,36 @@ void MemphisMatrixDisplay::showFirstFrame()
 void MemphisMatrixDisplay::showNextFrame()
 {
   m_frame++;
-  if (0 == (m_frame % (m_showHeart2 ? heartbeating2NUM_FRM :
-                       m_showHeart3 ? heartbeating3NUM_FRM : heartbeating1NUM_FRM)))
+  if (0 == (m_frame % ((m_selectedImage == 2) ? heartbeating2NUM_FRM :
+                       (m_selectedImage == 3) ? heartbeating3NUM_FRM : heartbeating1NUM_FRM)))
   {
-    m_frame = 0;
+    if (m_imageSequence->isRunning())
+    {
+      m_frame = 0;
+      m_imageSequence->execNextCmd();
+    }
   }
   updateDisplay();
 }
 
 void MemphisMatrixDisplay::updateDisplay()
 {
-  if (m_isDisplayActive && (0 != m_neoMatrix))
+  if (m_isDisplayActive)
   {
-    m_neoMatrix->fillScreen(0);
-    updateHeart();
-    if (m_printText)
+    if (0 != m_neoMatrix)
     {
-      updateText();
+      m_neoMatrix->fillScreen(0);
+      updateHeart();
+      if (m_printText)
+      {
+        updateText();
+      }
+      m_neoMatrix->show();
     }
-    m_neoMatrix->show();
+    else
+    {
+      deactivateDisplay();
+    }
   }
 }
 
@@ -338,14 +594,14 @@ void MemphisMatrixDisplay::updateHeart()
       byte loc = x + y * s_matrixEdgeLength;
       if (0 != m_neoMatrix)
       {
-        if (m_showHeart3 && (heartbeating3NUM_FRM > m_frame))
+        if ((m_selectedImage == 3) && (heartbeating3NUM_FRM > m_frame))
         {
           m_neoMatrix->drawPixel(x, y, drawRGB24toRGB565(
                   heartbeating3Frame[m_frame][CS_red][loc],
                   heartbeating3Frame[m_frame][CS_green][loc],
                   heartbeating3Frame[m_frame][CS_blue][loc]));
         }
-        else if (m_showHeart2 && (heartbeating2NUM_FRM > m_frame))
+        else if ((m_selectedImage == 2) && (heartbeating2NUM_FRM > m_frame))
         {
           m_neoMatrix->drawPixel(x, y, drawRGB24toRGB565(
                   heartbeating2Frame[m_frame][CS_red][loc],
@@ -364,45 +620,56 @@ void MemphisMatrixDisplay::updateHeart()
   }
 }
 
-void MemphisMatrixDisplay::selectImage(unsigned int frame)
+void MemphisMatrixDisplay::selectImage(unsigned int img)
 {
-  switch (frame)
+  m_selectedImage = img;
+  if ((0 == m_selectedImage) || (3 < m_selectedImage))
   {
-    case 2:
-    {
-      m_showHeart2 = true;
-      m_showHeart3 = false;
-      break;
-    }
-    case 3:
-    {
-      m_showHeart2 = false;
-      m_showHeart3 = true;
-      break;
-    }
-    default:
-    {
-      m_showHeart2 = false;
-      m_showHeart3 = false;
-      break;
-    }
-  };
+    m_selectedImage = 0;
+    m_imageSequence->stop();
+    deactivateDisplay();
+    Serial.println("selectImage() -> deactivateDisplay()");
+  }
+  else
+  {
+    showFirstFrame();
+    activateDisplay();
+    Serial.println("selectImage() -> activateDisplay()");
+  }
+}
+
+unsigned int MemphisMatrixDisplay::selectedImage()
+{
+  return m_selectedImage;
+}
+
+
+bool MemphisMatrixDisplay::isPrintText()
+{
+  return m_printText;
+}
+
+void MemphisMatrixDisplay::setIstPrintText(bool isPrintText)
+{
+  m_printText = isPrintText;
 }
 
 void MemphisMatrixDisplay::activateDisplay()
 {
   m_isDisplayActive = true;
+  pinMode(c_displayBlankPin, INPUT);
+  digitalWrite(c_displayBlankPin, 1);
   updateDisplay();
 }
 
 void MemphisMatrixDisplay::deactivateDisplay()
 {
-//  m_isDisplayActive = false;
+  m_isDisplayActive = false;
+  pinMode(c_displayBlankPin, OUTPUT);
+  digitalWrite(c_displayBlankPin, 0);
   if (0 != m_neoMatrix)
   {
-//  m_neoMatrix->fillScreen(0);
-//  m_neoMatrix->show();
-    m_neoMatrix->setTextColor(colors[CS_green]);
+    m_neoMatrix->fillScreen(0);
+    m_neoMatrix->show();
   }
-  updateDisplay();
 }
