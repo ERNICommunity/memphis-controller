@@ -69,45 +69,24 @@ class MyToggleButtonAdapter : public ToggleButtonAdapter
 {
 private:
   MemphisMatrixDisplay* m_matrix;
-  unsigned int m_image;
 
 public:
   MyToggleButtonAdapter(MemphisMatrixDisplay* matrix)
   : m_matrix(matrix)
-  , m_image(4)
-  {
-    if (0 != m_matrix)
-    {
-//      if (4 == m_image)
-//      {
-//        m_matrix->blankDisplay();
-//      }
-//      else
-//      {
-//        m_matrix->selectImage(m_image);
-//        m_matrix->activateDisplay();
-//      }
-    }
-  }
+  { }
 
   void notifyStatusChanged(bool isActive)
   {
     if (0 != m_matrix)
     {
-//      if (isActive)
-//      {
-//        if (m_image == 4)
-//        {
-//          m_matrix->blankDisplay();
-//          m_image = 2;
-//        }
-//        else
-//        {
-//          m_matrix->selectImage(m_image);
-//          m_matrix->activateDisplay();
-//          m_image++;
-//        }
-//      }
+      if (m_matrix->imageSequence()->isRunning())
+      {
+        m_matrix->imageSequence()->stop();
+      }
+      else
+      {
+        m_matrix->imageSequence()->start();
+      }
     }
   }
 };
