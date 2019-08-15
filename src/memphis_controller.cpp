@@ -199,11 +199,15 @@ class PulseMockTimerAdapter : public TimerAdapter
 private:
   MemphisMatrixDisplay* m_matrix;
   unsigned long int m_hbr;
+  const static unsigned long int c_hbr = 20;
+  const static unsigned long int c_minHbr = c_hbr;
+  const static unsigned long int c_maxHbr = c_hbr;
   bool m_isModulationIncreasing;
+
 public:
   PulseMockTimerAdapter(MemphisMatrixDisplay* matrix)
   : m_matrix(matrix)
-  , m_hbr(25)
+  , m_hbr(c_hbr)
   , m_isModulationIncreasing(true)
   { }
 
@@ -221,7 +225,7 @@ public:
 
     if (m_isModulationIncreasing)
     {
-      if (m_hbr < 25)
+      if (m_hbr < c_maxHbr)
       {
         m_hbr++;
       }
@@ -232,7 +236,7 @@ public:
     }
     else
     {
-      if (m_hbr > 25)
+      if (m_hbr > c_minHbr)
       {
         m_hbr--;
       }
