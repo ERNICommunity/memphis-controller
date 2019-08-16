@@ -421,7 +421,7 @@ MemphisMatrixDisplay::MemphisMatrixDisplay(uint8_t pin)
   {
     m_neoMatrix->begin();
     m_neoMatrix->setTextWrap(false);
-    m_neoMatrix->setBrightness(20);
+    m_neoMatrix->setBrightness(50);
     m_neoMatrix->setFont(&TomThumb);
     m_neoMatrix->setTextColor(colors[CS_blue]);
   }

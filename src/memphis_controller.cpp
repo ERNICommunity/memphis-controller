@@ -38,7 +38,9 @@
 #include <MemphisPulseSensorAdapter.h>
 #include <MemphisMatrixDisplay.h>
 #include <Battery.h>
-#include <ToggleButton.h>
+#include <ArduinoDigitalInPinSupervisor.h>
+#include <Button.h>
+#include <DetectorStrategy.h>
 #include <CmdSequence.h>
 
 SerialCommand* sCmd = 0;
@@ -63,30 +65,88 @@ public:
 // Push Button
 //-----------------------------------------------------------------------------
 #define BUTTON_PIN 11
-ToggleButton* button = 0;
 
-class MyToggleButtonAdapter : public ToggleButtonAdapter
+class ButtonPressTimerAdapter : public TimerAdapter
+{
+  void timeExpired()
+  {
+
+  }
+};
+
+//-----------------------------------------------------------------------------
+
+class ButtonEdgeDetector : public EdgeDetector
+{
+public:
+  void onEdge(bool newState)
+  {
+    if (0 != button())
+    {
+      if (0 != button()->adapter())
+      {
+        button()->adapter()->notifyStatusChanged(newState);
+      }
+    }
+  }
+};
+
+//-----------------------------------------------------------------------------
+
+class MyButtonAdapter : public ButtonAdapter
 {
 private:
   MemphisMatrixDisplay* m_matrix;
+  Timer* m_timer;
+  DbgTrace_Port* m_trPort;
+  const static unsigned long c_pressedToStartMinTimeMillis = 2000;
+  const static unsigned long c_pressedToStopMinTimeMillis = 3000;
 
 public:
-  MyToggleButtonAdapter(MemphisMatrixDisplay* matrix)
+  MyButtonAdapter(MemphisMatrixDisplay* matrix)
   : m_matrix(matrix)
+  , m_timer(new Timer(new ButtonPressTimerAdapter(), Timer::IS_NON_RECURRING))
+  , m_trPort(new DbgTrace_Port("btn", DbgTrace_Level::info))
   { }
 
   void notifyStatusChanged(bool isActive)
   {
-    if (0 != m_matrix)
+    TR_PRINTF(m_trPort, DbgTrace_Level::info, "Button %s", isActive ? "pressed" : "released");
+    if ((0 != m_matrix) && (0 != m_matrix->imageSequence()))
     {
-      if (m_matrix->imageSequence()->isRunning())
+      if (isActive)
       {
-        m_matrix->imageSequence()->stop();
+        if (0 != m_matrix)
+        {
+          if (m_matrix->imageSequence()->isRunning())
+          {
+            m_matrix->imageSequence()->stop();
+          }
+          else
+          {
+            m_matrix->imageSequence()->start();
+          }
+          digitalWrite(LED_BUILTIN, m_matrix->imageSequence()->isRunning());
+        }
       }
-      else
-      {
-        m_matrix->imageSequence()->start();
-      }
+//        // button: rising edge and pressed
+//        if (!m_matrix->imageSequence()->isRunning())
+//        {
+//          m_timer->cancelTimer();
+//          m_timer->startTimer(c_pressedToStartMinTimeMillis);
+//        }
+//      }
+//      else
+//      {
+//        // button: falling edge and released
+//        if (!m_matrix->imageSequence()->isRunning())
+//        {
+//          if (m_timer->isTimerExpired())
+//          {
+//
+//          }
+//        }
+//      }
     }
   }
 };
@@ -292,7 +352,7 @@ void setup()
   //-----------------------------------------------------------------------------
   // Push Button
   //-----------------------------------------------------------------------------
-  button = new ToggleButton(BUTTON_PIN, ToggleButton::IND_NC, ToggleButton::IS_NEG_LOGIC, new MyToggleButtonAdapter(matrix));
+  new Button(new ArduinoDigitalInPinSupervisor(BUTTON_PIN), new ButtonEdgeDetector(), new MyButtonAdapter(matrix));
 
   //-----------------------------------------------------------------------------
   // Pulse Sensor

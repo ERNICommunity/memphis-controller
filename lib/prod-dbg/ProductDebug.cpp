@@ -175,8 +175,8 @@ public:
     }
     else
     {
-      const bool DO_NOT_SET_wifioff = false;
 #ifdef ESP8266
+      const bool DO_NOT_SET_wifioff = false;
       WiFi.disconnect(DO_NOT_SET_wifioff);
       Serial.println("WiFi is disconnected now.");
 #else
