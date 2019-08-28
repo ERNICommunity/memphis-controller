@@ -628,7 +628,7 @@ void MemphisMatrixDisplay::deactivateDisplay()
 {
   m_isDisplayActive = false;
   pinMode(c_displayBlankPin, OUTPUT);
-  digitalWrite(c_displayBlankPin, 0);
+//  digitalWrite(c_displayBlankPin, 0);
   if (0 != m_neoMatrix)
   {
     m_neoMatrix->fillScreen(0);
