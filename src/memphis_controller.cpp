@@ -99,7 +99,7 @@ private:
   MemphisMatrixDisplay* m_matrix;
   Timer* m_timer;
   DbgTrace_Port* m_trPort;
-  const static unsigned long c_pressedMinTimeMillis = 2000;
+  const static unsigned long c_pressedMinTimeMillis = 800;
 
 public:
   MyButtonAdapter(MemphisMatrixDisplay* matrix)
