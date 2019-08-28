@@ -286,7 +286,7 @@ public:
     MyCmdSeqAdapter* adapter = static_cast<MyCmdSeqAdapter*>(cmdSequence()->adapter());
     if (0 != adapter)
     {
-      adapter->blankDisplayAction();
+//      adapter->blankDisplayAction();
     }
   }
 
@@ -421,7 +421,7 @@ MemphisMatrixDisplay::MemphisMatrixDisplay(uint8_t pin)
   {
     m_neoMatrix->begin();
     m_neoMatrix->setTextWrap(false);
-    m_neoMatrix->setBrightness(50);
+    m_neoMatrix->setBrightness(17);
     m_neoMatrix->setFont(&TomThumb);
     m_neoMatrix->setTextColor(colors[CS_blue]);
   }
@@ -544,6 +544,12 @@ uint16_t MemphisMatrixDisplay::drawRGB24toRGB565(byte r, byte g, byte b)
     float corrR = r * 1.5; if (corrR > 255.0) corrR = 255.0; r = static_cast<byte>(corrR);
     float corrG = g * 1.5; if (corrG > 255.0) corrG = 255.0; g = static_cast<byte>(corrG);
     float corrB = b * 1.5; if (corrB > 255.0) corrB = 255.0; b = static_cast<byte>(corrB);
+  }
+  if ((r == 237) && (g == 27) && (b == 52))
+  {
+    float corrR = r * 0.7; if (corrR > 255.0) corrR = 255.0; r = static_cast<byte>(corrR);
+    float corrG = g * 0.7; if (corrG > 255.0) corrG = 255.0; g = static_cast<byte>(corrG);
+    float corrB = b * 0.7; if (corrB > 255.0) corrB = 255.0; b = static_cast<byte>(corrB);
   }
   return ((r / 8) << 11) | ((g / 4) << 5) | (b / 8);
 }

@@ -99,8 +99,7 @@ private:
   MemphisMatrixDisplay* m_matrix;
   Timer* m_timer;
   DbgTrace_Port* m_trPort;
-  const static unsigned long c_pressedToStartMinTimeMillis = 2000;
-  const static unsigned long c_pressedToStopMinTimeMillis = 3000;
+  const static unsigned long c_pressedMinTimeMillis = 2000;
 
 public:
   MyButtonAdapter(MemphisMatrixDisplay* matrix)
@@ -116,7 +115,14 @@ public:
     {
       if (isActive)
       {
-        if (0 != m_matrix)
+        // button: rising edge and pressed
+        m_timer->cancelTimer();
+        m_timer->startTimer(c_pressedMinTimeMillis);
+      }
+      else
+      {
+        // button: falling edge and released
+        if (m_timer->isTimerExpired())
         {
           if (m_matrix->imageSequence()->isRunning())
           {
@@ -128,25 +134,11 @@ public:
           }
           digitalWrite(LED_BUILTIN, m_matrix->imageSequence()->isRunning());
         }
+        else
+        {
+          m_timer->cancelTimer();
+        }
       }
-//        // button: rising edge and pressed
-//        if (!m_matrix->imageSequence()->isRunning())
-//        {
-//          m_timer->cancelTimer();
-//          m_timer->startTimer(c_pressedToStartMinTimeMillis);
-//        }
-//      }
-//      else
-//      {
-//        // button: falling edge and released
-//        if (!m_matrix->imageSequence()->isRunning())
-//        {
-//          if (m_timer->isTimerExpired())
-//          {
-//
-//          }
-//        }
-//      }
     }
   }
 };
