@@ -40,6 +40,7 @@
 #include <Battery.h>
 #include <ArduinoDigitalInPinSupervisor.h>
 #include <Button.h>
+#include <EdgeDetector.h>
 #include <DetectorStrategy.h>
 #include <CmdSequence.h>
 
@@ -369,9 +370,5 @@ void loop()
     sCmd->readSerial();     // process serial commands
   }
 //  MqttClient.loop();      // process MQTT Client
-#ifdef ESP8266
   scheduleTimers();
-#else
-  yield();
-#endif
 }
