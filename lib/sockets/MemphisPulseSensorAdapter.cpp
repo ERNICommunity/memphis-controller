@@ -17,7 +17,6 @@
 #endif
 
 #include <MemphisMatrixDisplay.h>
-#include <String.h>
 #include <PolarPulse.h>
 
 //-----------------------------------------------------------------------------
